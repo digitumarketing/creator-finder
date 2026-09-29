@@ -1,6 +1,7 @@
 """Minimal Apify REST client. Never logs API tokens."""
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -22,6 +23,37 @@ class ApifyAuthError(Exception):
 
 class ApifyError(Exception):
     """Other Apify API errors."""
+
+
+class ApifyKeyUnavailableError(ApifyError):
+    """Token is valid but can't run this now (out of credit, usage limit, rate
+    limited, actor not rented). Try the next key; don't mark this one bad."""
+
+
+def _error_type(r: httpx.Response) -> str:
+    try:
+        err = r.json().get("error") or {}
+        return str(err.get("type") or "").lower()
+    except Exception:
+        return ""
+
+
+def _raise_for_start(r: httpx.Response) -> None:
+    """Classify a failed run start so callers can rotate keys correctly."""
+    if r.status_code < 400:
+        return
+    etype = _error_type(r)
+    detail = r.text[:500]
+    if r.status_code == 401 or "token" in etype or "user-or-token" in etype:
+        raise ApifyAuthError("Invalid or unauthorized API token")
+    if r.status_code in (402, 403, 429) or any(
+        w in etype for w in ("usage", "limit", "credit", "rent", "memory")
+    ):
+        raise ApifyKeyUnavailableError(
+            f"Key can't run this actor now: HTTP {r.status_code} — {detail}"
+        )
+    log.error("start_actor_run failed HTTP %s: %s", r.status_code, detail)
+    raise ApifyError(f"Start run failed: HTTP {r.status_code} — {detail}")
 
 
 def _headers(token: str) -> dict[str, str]:
@@ -65,12 +97,7 @@ async def start_actor_run(
     url = f"{APIFY_BASE}/acts/{aid}/runs"
     async with httpx.AsyncClient(timeout=60.0) as client:
         r = await client.post(url, headers=_headers(token), json=run_input)
-    if r.status_code in (401, 403):
-        raise ApifyAuthError("Invalid or unauthorized API token")
-    if r.status_code >= 400:
-        detail = r.text[:500]
-        log.error("start_actor_run failed HTTP %s: %s", r.status_code, detail)
-        raise ApifyError(f"Start run failed: HTTP {r.status_code} — {detail}")
+    _raise_for_start(r)
     body = r.json()
     return body.get("data") or body
 
@@ -115,6 +142,62 @@ async def fetch_dataset_items(token: str, dataset_id: str) -> list[dict[str, Any
     if isinstance(data, list):
         return data
     return []
+
+
+TERMINAL_STATUSES = {"SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT", "TIMED_OUT"}
+
+
+async def run_actor(
+    token: str,
+    actor_id: str,
+    run_input: dict[str, Any],
+    on_status: Any = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Start a run, wait for it to finish, return (items, final_run_data).
+
+    A run that ends FAILED/ABORTED/TIMED-OUT still returns whatever it saved
+    (partial results beat nothing); it raises only when nothing was saved.
+    ``on_status(run_data)`` is awaited after each poll when given.
+    """
+    try:
+        run = await start_actor_run(token, actor_id, run_input)
+    except httpx.TransportError as e:
+        raise ApifyError(f"Couldn't reach Apify ({e.__class__.__name__}: {e})") from e
+    run_id = run.get("id")
+    status = (run.get("status") or "RUNNING").upper()
+    elapsed = 0.0
+    net_failures = 0
+    while status not in TERMINAL_STATUSES:
+        if elapsed >= POLL_TIMEOUT_SEC:
+            raise ApifyError(f"Apify run {run_id} timed out waiting for completion")
+        await asyncio.sleep(POLL_INTERVAL_SEC)
+        elapsed += POLL_INTERVAL_SEC
+        try:
+            run = await get_run(token, run_id)
+        except httpx.TransportError as e:
+            # The run keeps going on Apify's side; ride out short network blips.
+            net_failures += 1
+            if net_failures >= 10:
+                raise ApifyError(f"Lost connection to Apify while waiting for run {run_id}") from e
+            continue
+        net_failures = 0
+        status = (run.get("status") or "").upper()
+        if on_status is not None:
+            await on_status(run)
+    dataset_id = run.get("defaultDatasetId")
+    items: list[dict[str, Any]] = []
+    for attempt in range(3):
+        try:
+            items = await fetch_dataset_items(token, dataset_id) if dataset_id else []
+            break
+        except httpx.TransportError as e:
+            if attempt == 2:
+                raise ApifyError(f"Couldn't download results of run {run_id}: {e}") from e
+            await asyncio.sleep(POLL_INTERVAL_SEC)
+    if status != "SUCCEEDED" and not items:
+        msg = (run.get("statusMessage") or "")[:300]
+        raise ApifyError(f"Apify run {run_id} ended with status {status}. {msg}".strip())
+    return items, run
 
 
 _COUNTRY_CODES = {

@@ -75,6 +75,10 @@ class Job(Base):
     max_leads = Column(Integer, default=50)
     actor_id = Column(String(200), default="coregent~instagram-creator-leads-scraper")
     platform = Column(String(40), default="instagram", nullable=False)  # instagram | twitter
+    # "pipeline" = official Apify IG scrapers (app/pipeline.py); "legacy" = single actor
+    engine = Column(String(40), default="legacy", nullable=False)
+    options_json = Column(Text, nullable=True)  # pipeline options
+    usage_json = Column(Text, nullable=True)  # Apify usage + warnings
 
     api_key_id = Column(Integer, ForeignKey("api_keys.id"), nullable=True)
     api_key_label = Column(String(120), nullable=True)  # snapshot

@@ -78,6 +78,8 @@ def create_job(
     seed_usernames: list[str] | None = None,
     seed_discovery: bool = False,
     platform: str = "instagram",
+    engine: str = "legacy",
+    options: dict[str, Any] | None = None,
 ) -> Job:
     max_leads = max(1, min(int(max_leads), 200))
     seeds = list(seed_usernames or [])
@@ -105,6 +107,8 @@ def create_job(
         min_engagement_rate_str=str(min_engagement_rate),
         max_leads=max_leads,
         actor_id=actor_id.strip() or default_actor,
+        engine=engine if plat == "instagram" else "legacy",
+        options_json=json.dumps(options or {}),
     )
     session.add(job)
     session.commit()
@@ -233,6 +237,16 @@ async def resume_orphaned_jobs() -> None:
     """Schedule all persisted running jobs that have an Apify run id."""
     session = get_session()
     try:
+        # Pipeline jobs chain several runs in memory and can't be resumed.
+        for job in (
+            session.query(Job)
+            .filter(Job.status.in_(("queued", "running")), Job.engine == "pipeline")
+            .all()
+        ):
+            job.status = "failed"
+            job.error_message = "The app was restarted while this scrape was running. Start it again."
+            job.finished_at = _utcnow()
+        session.commit()
         job_ids = [
             row.id
             for row in session.query(Job)
@@ -257,6 +271,12 @@ async def run_job(job_id: int) -> None:
         job.status = "running"
         job.started_at = _utcnow()
         session.commit()
+
+        if job.engine == "pipeline":
+            from app.pipeline import Pipeline
+
+            await Pipeline(session, job).run()
+            return
 
         keywords = json.loads(job.keywords_json or "[]")
         hashtags = json.loads(job.hashtags_json or "[]")

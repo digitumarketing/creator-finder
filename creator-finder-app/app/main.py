@@ -19,6 +19,7 @@ from app.apify_client import ApifyAuthError, ApifyError
 from app.db import JOBS_DIR, init_db, get_session
 from app.jobs import create_job, parse_lines, resume_orphaned_jobs, schedule_job
 from app.models import ApiKey, Job
+from app.pipeline import DEFAULT_OPTIONS, merged_options
 
 logging.basicConfig(
     level=logging.INFO,
@@ -88,6 +89,7 @@ async def scrape_page(request: Request):
             "default_actor": apify_client.DEFAULT_ACTOR,
             "default_instagram_actor": apify_client.DEFAULT_ACTOR,
             "default_twitter_actor": apify_client.DEFAULT_TWITTER_ACTOR,
+            "opts": DEFAULT_OPTIONS,
             "error": None,
         },
     )
@@ -110,6 +112,15 @@ async def scrape_submit(
     min_engagement_rate: float = Form(0),
     max_leads: int = Form(50),
     actor_id: str = Form(""),
+    engine: str = Form("pipeline"),
+    posts_per_hashtag: int = Form(150),
+    accounts_per_keyword: int = Form(50),
+    max_profiles: int = Form(300),
+    active_within_days: int = Form(60),
+    expand_related: Optional[str] = Form(None),
+    check_links: Optional[str] = Form(None),
+    location_strict: Optional[str] = Form(None),
+    skip_seen: Optional[str] = Form(None),
 ):
     plat = (platform or "instagram").strip().lower()
     if plat in ("x", "twitter", "twitter/x"):
@@ -125,6 +136,7 @@ async def scrape_submit(
             "default_actor": default_actor,
             "default_instagram_actor": apify_client.DEFAULT_ACTOR,
             "default_twitter_actor": apify_client.DEFAULT_TWITTER_ACTOR,
+            "opts": DEFAULT_OPTIONS,
         }
 
     def _form_ctx(**extra):
@@ -136,6 +148,7 @@ async def scrape_submit(
             "seed_usernames": seed_usernames,
             "seed_discovery": seed_discovery is not None,
             "location": location,
+            "engine": engine,
         }
         base.update(extra)
         return base
@@ -210,6 +223,23 @@ async def scrape_submit(
             )
 
         max_leads = max(1, min(int(max_leads), 200))
+        use_pipeline = plat == "instagram" and engine != "legacy"
+        options = (
+            merged_options(
+                {
+                    "posts_per_hashtag": posts_per_hashtag,
+                    "accounts_per_keyword": accounts_per_keyword,
+                    "max_profiles": max_profiles,
+                    "active_within_days": active_within_days,
+                    "expand_related": expand_related is not None,
+                    "check_links": check_links is not None,
+                    "location_strict": location_strict is not None,
+                    "skip_seen": skip_seen is not None,
+                }
+            )
+            if use_pipeline
+            else {}
+        )
         # Checkbox defaults ON in the template; only honor when seeds are present.
         # Seed discovery is Instagram-only.
         do_seed_discovery = (
@@ -231,6 +261,8 @@ async def scrape_submit(
             seed_usernames=seeds,
             seed_discovery=do_seed_discovery,
             platform=plat,
+            engine="pipeline" if use_pipeline else "legacy",
+            options=options,
         )
         job_id = job.id
     finally:
@@ -455,7 +487,10 @@ async def job_detail(request: Request, job_id: int):
             "location": j.location,
             "apify_run_id": j.apify_run_id,
             "seed_discovery": seed_discovery,
+            "engine": getattr(j, "engine", None) or "legacy",
         })
+        usage = json.loads(j.usage_json) if getattr(j, "usage_json", None) else {}
+        options = json.loads(j.options_json) if getattr(j, "options_json", None) else {}
         ctx = {
             "job": job_view,
             "leads": leads,
@@ -465,6 +500,8 @@ async def job_detail(request: Request, job_id: int):
             "seed_usernames": seed_usernames,
             "progress_message": j.progress_message,
             "auto_refresh": auto_refresh,
+            "usage": usage,
+            "options": options,
         }
     finally:
         session.close()

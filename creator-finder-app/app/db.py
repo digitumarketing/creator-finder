@@ -56,6 +56,14 @@ def init_db() -> None:
             conn.exec_driver_sql(
                 "ALTER TABLE jobs ADD COLUMN seed_discovery BOOLEAN DEFAULT 0"
             )
+        if "engine" not in columns:
+            conn.exec_driver_sql(
+                "ALTER TABLE jobs ADD COLUMN engine VARCHAR(40) NOT NULL DEFAULT 'legacy'"
+            )
+        if "options_json" not in columns:
+            conn.exec_driver_sql("ALTER TABLE jobs ADD COLUMN options_json TEXT")
+        if "usage_json" not in columns:
+            conn.exec_driver_sql("ALTER TABLE jobs ADD COLUMN usage_json TEXT")
         if "platform" not in columns:
             conn.exec_driver_sql(
                 "ALTER TABLE jobs ADD COLUMN platform VARCHAR(40) DEFAULT 'instagram'"

@@ -1,0 +1,7 @@
+# Local data: SQLite DB holds your Apify API tokens — never commit it
+creator-finder-app/data/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store

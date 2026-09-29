@@ -26,11 +26,14 @@
 
 {% if job.status == 'failed' and job.error_message %}
 <div class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm whitespace-pre-wrap">{{ job.error_message }}</div>
+{% elif job.error_message %}
+<div class="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-200 text-sm whitespace-pre-wrap"><strong>Some steps had problems (results below are still usable):</strong>
+{{ job.error_message }}</div>
 {% endif %}
 
 <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="card p-4">
-    <p class="text-xs text-slate-500 uppercase tracking-wide">Raw leads</p>
+    <p class="text-xs text-slate-500 uppercase tracking-wide">{{ 'Profiles checked' if job.engine == 'pipeline' else 'Raw leads' }}</p>
     <p class="text-2xl font-semibold mt-1">{{ job.raw_count }}</p>
   </div>
   <div class="card p-4">
@@ -53,9 +56,15 @@
     <div><span class="text-slate-500">Started</span> · {{ fmt_dt(job.started_at) }}</div>
     <div><span class="text-slate-500">Finished</span> · {{ fmt_dt(job.finished_at) }}</div>
     <div><span class="text-slate-500">Platform</span> · {{ 'Twitter / X' if job.platform == 'twitter' else 'Instagram' }}</div>
+    {% if job.engine == 'pipeline' %}
+    <div><span class="text-slate-500">Engine</span> · official Apify Instagram scrapers</div>
+    {% if options %}<div><span class="text-slate-500">Size</span> · {{ options.posts_per_hashtag }} posts/hashtag · {{ options.accounts_per_keyword }} accounts/keyword · max {{ options.max_profiles }} profiles</div>{% endif %}
+    {% if usage %}<div><span class="text-slate-500">Apify usage</span> · {{ usage.runs }} runs · {{ usage.hashtag_posts }} posts · {{ usage.search_results }} search results · {{ usage.profiles }} profiles</div>{% endif %}
+    {% else %}
     <div><span class="text-slate-500">Actor</span> · <code class="text-xs text-slate-300">{{ job.actor_id }}</code></div>
+    {% endif %}
     <div><span class="text-slate-500">Followers</span> · {{ job.min_followers }}–{{ job.max_followers }}</div>
-    <div><span class="text-slate-500">Max leads</span> · {{ job.max_leads }}</div>
+    {% if job.engine != 'pipeline' %}<div><span class="text-slate-500">Max leads</span> · {{ job.max_leads }}</div>{% endif %}
     <div><span class="text-slate-500">Require email</span> · {{ 'yes' if job.require_email else 'no' }}</div>
     <div><span class="text-slate-500">Exclude selling</span> · {{ 'yes' if job.exclude_selling else 'no' }}</div>
     {% if job.location %}<div><span class="text-slate-500">Location</span> · {{ job.location }}</div>{% endif %}
@@ -102,24 +111,34 @@
     <table class="data w-full">
       <thead>
         <tr>
+          <th>Score</th>
           <th>Username</th>
           <th>Name</th>
           <th>Followers</th>
+          <th>ER %</th>
+          <th>Last post</th>
           <th>Email</th>
+          <th>Location</th>
           <th>Bio</th>
+          <th>Found via</th>
           <th>Links</th>
         </tr>
       </thead>
       <tbody>
         {% for lead in leads %}
         <tr>
+          <td class="font-semibold">{{ lead.score if lead.score is defined else '—' }}</td>
           <td>
             <a class="text-accent-soft hover:underline font-medium" href="{{ lead.profile_url }}" target="_blank" rel="noopener">@{{ lead.username }}</a>
           </td>
           <td class="text-slate-300">{{ lead.full_name or '—' }}</td>
           <td>{{ "{:,}".format(lead.followers) }}</td>
-          <td class="text-xs font-mono text-slate-300">{{ lead.email or '—' }}</td>
+          <td>{{ lead.engagement_rate if lead.engagement_rate else '—' }}</td>
+          <td class="text-xs">{% if lead.days_since_post is defined and lead.days_since_post is not none %}{{ lead.days_since_post }}d ago{% else %}—{% endif %}</td>
+          <td class="text-xs font-mono text-slate-300">{{ lead.email or '—' }}{% if lead.email_source == 'link_in_bio' %}<span class="block text-slate-500 font-sans">from bio link</span>{% endif %}</td>
+          <td class="text-xs">{{ lead.location_match or '—' }}</td>
           <td><div class="bio-snip" title="{{ lead.biography }}">{{ lead.biography or '—' }}</div></td>
+          <td class="text-xs text-slate-400">{{ (lead.found_via or [])[:3] | join(', ') or '—' }}</td>
           <td class="text-xs">
             {% if lead.external_url %}
             <a class="text-slate-400 hover:text-white underline" href="{{ lead.external_url }}" target="_blank" rel="noopener">website</a>
