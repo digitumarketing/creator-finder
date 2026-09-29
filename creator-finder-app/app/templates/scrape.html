@@ -59,12 +59,12 @@
     <div>
       <label class="field-label" for="keywords" id="keywords-label">Keywords / search terms <span class="text-slate-600">(optional if seeds set)</span></label>
       <textarea class="field font-mono text-sm" id="keywords" name="keywords" rows="6" placeholder="newborn tips&#10;toddler meal prep">{{ form.keywords if form is defined else '' }}</textarea>
-      <p class="text-xs text-slate-500 mt-1" id="keywords-hint">One per line. Optional when seed usernames are set. Prefer 5–8 focused keyword phrases per run.</p>
+      <p class="text-xs text-slate-500 mt-1" id="keywords-hint">One per line. Searches Instagram accounts by name, so keep phrases short ("toddler meals", "mom fitness"). One Apify run per line.</p>
     </div>
     <div id="hashtags-wrap">
       <label class="field-label" for="hashtags">Hashtags <span class="text-slate-600">(optional)</span></label>
       <textarea class="field font-mono text-sm" id="hashtags" name="hashtags" rows="6" placeholder="newbornsleep&#10;firsttimemom&#10;#gentleparenting">{{ form.hashtags if form is defined else '' }}</textarea>
-      <p class="text-xs text-slate-500 mt-1" id="hashtags-hint">One per line; <code class="text-slate-400">#</code> optional. For United States, use the location field—do not repeat it in each keyword.</p>
+      <p class="text-xs text-slate-500 mt-1" id="hashtags-hint">One per line; <code class="text-slate-400">#</code> optional. <strong class="text-slate-300">Best source of creators.</strong> Use 5–15 specific tags (#toddlermealideas beats #food).</p>
       <p class="text-xs text-slate-600 mt-1 hidden" id="hashtags-unused">Hashtags are not used for Twitter/X discovery.</p>
     </div>
   </div>
@@ -113,7 +113,70 @@
     </div>
   </div>
 
-  <div class="border-t border-white/5 pt-5 grid sm:grid-cols-2 gap-5">
+  {% set form_engine = form.engine if form is defined and form.engine is defined else 'pipeline' %}
+  <div class="border-t border-white/5 pt-5" id="engine-wrap">
+    <h2 class="text-sm font-semibold text-slate-300 mb-1">Discovery engine</h2>
+    <div class="flex flex-col gap-2 mt-2">
+      <label class="inline-flex items-start gap-2.5 cursor-pointer select-none">
+        <input type="radio" name="engine" value="pipeline" id="engine-pipeline" {% if form_engine != 'legacy' %}checked{% endif %}
+          class="mt-1 border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300"><strong>Official Apify Instagram scrapers</strong> (recommended)<br>
+          <span class="text-xs text-slate-500">Hashtag posts + account search → full profile check → related creators → bio-link check. Finds hundreds of accounts per run.</span></span>
+      </label>
+      <label class="inline-flex items-start gap-2.5 cursor-pointer select-none">
+        <input type="radio" name="engine" value="legacy" id="engine-legacy" {% if form_engine == 'legacy' %}checked{% endif %}
+          class="mt-1 border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Single custom actor (old behaviour)<br>
+          <span class="text-xs text-slate-500">One Apify actor you pick. The default creator-leads actor usually returns very few profiles.</span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="border-t border-white/5 pt-5" id="pipeline-opts">
+    <h2 class="text-sm font-semibold text-slate-300 mb-4">Scrape size &amp; quality checks</h2>
+    <div class="grid sm:grid-cols-4 gap-5">
+      <div>
+        <label class="field-label" for="posts_per_hashtag">Posts per hashtag</label>
+        <input class="field" type="number" id="posts_per_hashtag" name="posts_per_hashtag" value="{{ opts.posts_per_hashtag }}" min="10" max="2000" />
+        <p class="text-xs text-slate-500 mt-1">Each post = one poster.</p>
+      </div>
+      <div>
+        <label class="field-label" for="accounts_per_keyword">Accounts per keyword</label>
+        <input class="field" type="number" id="accounts_per_keyword" name="accounts_per_keyword" value="{{ opts.accounts_per_keyword }}" min="5" max="250" />
+      </div>
+      <div>
+        <label class="field-label" for="max_profiles">Max profiles to check</label>
+        <input class="field" type="number" id="max_profiles" name="max_profiles" value="{{ opts.max_profiles }}" min="10" max="3000" />
+        <p class="text-xs text-slate-500 mt-1">Main cost driver.</p>
+      </div>
+      <div>
+        <label class="field-label" for="active_within_days">Posted within (days)</label>
+        <input class="field" type="number" id="active_within_days" name="active_within_days" value="{{ opts.active_within_days }}" min="0" />
+        <p class="text-xs text-slate-500 mt-1">0 = off</p>
+      </div>
+    </div>
+    <div class="mt-5 grid sm:grid-cols-2 gap-3">
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" name="check_links" {% if opts.check_links %}checked{% endif %} class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Open bio links (Linktree etc.) to find emails &amp; stores <span class="text-slate-500">— free</span></span>
+      </label>
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" name="expand_related" {% if opts.expand_related %}checked{% endif %} class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Also check related creators of good matches</span>
+      </label>
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" name="skip_seen" {% if opts.skip_seen %}checked{% endif %} class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Skip creators already found in earlier jobs</span>
+      </label>
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" name="location_strict" {% if opts.location_strict %}checked{% endif %} class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Only keep creators whose location is confirmed</span>
+      </label>
+    </div>
+    <p class="text-xs text-slate-500 mt-3">Instagram doesn't publish a profile's country. Location is matched from bio, name and tagged post locations; unmatched creators are kept unless you tick the box above. Budget roughly a few US dollars of Apify credit per 1,000 profiles checked — see each actor's pricing on Apify.</p>
+  </div>
+
+  <div class="border-t border-white/5 pt-5 grid sm:grid-cols-2 gap-5 hidden" id="legacy-opts">
     <div>
       <label class="field-label" for="max_leads">Max leads</label>
       <input class="field" type="number" id="max_leads" name="max_leads" value="50" min="1" max="200" />
@@ -166,7 +229,19 @@
     return xRadio && xRadio.checked;
   }
 
+  const enginePipeline = document.getElementById('engine-pipeline');
+  const engineLegacy = document.getElementById('engine-legacy');
+  function syncEngine() {
+    const legacy = isTwitter() || (engineLegacy && engineLegacy.checked);
+    document.getElementById('pipeline-opts').classList.toggle('hidden', legacy);
+    document.getElementById('legacy-opts').classList.toggle('hidden', !legacy);
+    document.getElementById('engine-wrap').classList.toggle('hidden', isTwitter());
+  }
+  if (enginePipeline) enginePipeline.addEventListener('change', syncEngine);
+  if (engineLegacy) engineLegacy.addEventListener('change', syncEngine);
+
   function syncPlatform() {
+    syncEngine();
     const tw = isTwitter();
     // Only auto-swap actor when it still matches the other platform's default
     if (actorInput) {
@@ -195,7 +270,7 @@
     if (keywordsHint) {
       keywordsHint.textContent = tw
         ? 'One per line. First line = keywordQuery; remaining lines = bioIncludeTerms (OR match in bio). Keywords take precedence over handles when both are set.'
-        : 'One per line. Optional when seed usernames are set. Prefer 5–8 focused keyword phrases per run.';
+        : 'One per line. Searches Instagram accounts by name, so keep phrases short ("toddler meals", "mom fitness"). One Apify run per line.';
     }
     if (hashtagsHint) hashtagsHint.classList.toggle('hidden', tw);
     if (hashtagsUnused) hashtagsUnused.classList.toggle('hidden', !tw);

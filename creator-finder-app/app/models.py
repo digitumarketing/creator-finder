@@ -1,4 +1,4 @@
-"""SQLAlchemy models for API keys and scrape jobs."""
+"""SQLAlchemy models for scrape jobs. (API keys are never stored — see keystore.py.)"""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -7,12 +7,11 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-    ForeignKey,
     Integer,
     String,
     Text,
 )
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import DeclarativeBase
 
 
 def utcnow() -> datetime:
@@ -21,32 +20,6 @@ def utcnow() -> datetime:
 
 class Base(DeclarativeBase):
     pass
-
-
-class ApiKey(Base):
-    __tablename__ = "api_keys"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    label = Column(String(120), nullable=False)
-    token = Column(Text, nullable=False)  # full token, never shown in UI after save
-    enabled = Column(Boolean, default=True, nullable=False)
-    is_bad = Column(Boolean, default=False, nullable=False)  # auth failure flag
-    last_tested_at = Column(DateTime(timezone=True), nullable=True)
-    last_test_ok = Column(Boolean, nullable=True)
-    last_test_username = Column(String(200), nullable=True)
-    last_test_plan = Column(String(200), nullable=True)
-    last_test_error = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
-
-    jobs = relationship("Job", back_populates="api_key")
-
-    def masked_token(self) -> str:
-        t = self.token or ""
-        if len(t) <= 8:
-            return "••••••••"
-        prefix = t[:6] if t.startswith("apify_") else t[:4]
-        return f"{prefix}…{t[-4:]}"
 
 
 class Job(Base):
@@ -75,9 +48,14 @@ class Job(Base):
     max_leads = Column(Integer, default=50)
     actor_id = Column(String(200), default="coregent~instagram-creator-leads-scraper")
     platform = Column(String(40), default="instagram", nullable=False)  # instagram | twitter
+    # "pipeline" = official Apify IG scrapers (app/pipeline.py); "legacy" = single actor
+    engine = Column(String(40), default="legacy", nullable=False)
+    options_json = Column(Text, nullable=True)  # pipeline options
+    usage_json = Column(Text, nullable=True)  # Apify usage + warnings
 
-    api_key_id = Column(Integer, ForeignKey("api_keys.id"), nullable=True)
-    api_key_label = Column(String(120), nullable=True)  # snapshot
+    # API keys live in memory only (app/keystore.py); jobs just record the label.
+    api_key_id = Column(Integer, nullable=True)  # unused, kept for old databases
+    api_key_label = Column(String(120), nullable=True)
     apify_run_id = Column(String(120), nullable=True)
     apify_dataset_id = Column(String(120), nullable=True)
 
@@ -90,5 +68,3 @@ class Job(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)
-
-    api_key = relationship("ApiKey", back_populates="jobs")

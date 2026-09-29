@@ -1,0 +1,18 @@
+{
+  "name": "Creator Finder",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postCreateCommand": "cd creator-finder-app && python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt",
+  "postStartCommand": "bash creator-finder-app/cloud-start.sh",
+  "forwardPorts": [8787],
+  "portsAttributes": {
+    "8787": {
+      "label": "Creator Finder",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "secrets": {
+    "APIFY_TOKENS": {
+      "description": "Optional. Your Apify token(s), e.g. main:apify_api_xxx,backup:apify_api_yyy. Stored encrypted by GitHub, never in the repo. Leave empty to paste keys in the app instead."
+    }
+  }
+}

@@ -7,11 +7,11 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
-from app import apify_client
+from app import apify_client, keystore
 from app.apify_client import ApifyAuthError, ApifyError
 from app.db import JOBS_DIR, get_session
 from app.filters import filter_leads, write_exports
-from app.models import ApiKey, Job
+from app.models import Job
 
 log = logging.getLogger("creator_finder.jobs")
 
@@ -24,37 +24,15 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def pick_next_key(session) -> ApiKey | None:
+def pick_next_key() -> keystore.Key | None:
     """Pick next enabled, non-bad key in round-robin order."""
     global _rr_index
-    keys = (
-        session.query(ApiKey)
-        .filter(ApiKey.enabled.is_(True), ApiKey.is_bad.is_(False))
-        .order_by(ApiKey.id)
-        .all()
-    )
-    if not keys:
-        # Fallback: try enabled keys even if marked bad (user may have fixed them)
-        keys = (
-            session.query(ApiKey)
-            .filter(ApiKey.enabled.is_(True))
-            .order_by(ApiKey.id)
-            .all()
-        )
+    keys = keystore.usable() or [k for k in keystore.all_keys() if k.enabled]
     if not keys:
         return None
     idx = _rr_index % len(keys)
     _rr_index = idx + 1
     return keys[idx]
-
-
-def enabled_keys(session) -> list[ApiKey]:
-    return (
-        session.query(ApiKey)
-        .filter(ApiKey.enabled.is_(True), ApiKey.is_bad.is_(False))
-        .order_by(ApiKey.id)
-        .all()
-    )
 
 
 def parse_lines(text: str) -> list[str]:
@@ -78,6 +56,8 @@ def create_job(
     seed_usernames: list[str] | None = None,
     seed_discovery: bool = False,
     platform: str = "instagram",
+    engine: str = "legacy",
+    options: dict[str, Any] | None = None,
 ) -> Job:
     max_leads = max(1, min(int(max_leads), 200))
     seeds = list(seed_usernames or [])
@@ -105,6 +85,8 @@ def create_job(
         min_engagement_rate_str=str(min_engagement_rate),
         max_leads=max_leads,
         actor_id=actor_id.strip() or default_actor,
+        engine=engine if plat == "instagram" else "legacy",
+        options_json=json.dumps(options or {}),
     )
     session.add(job)
     session.commit()
@@ -128,7 +110,7 @@ def schedule_job(job_id: int) -> None:
 async def _poll_and_finalize(
     session,
     job: Job,
-    used_key: ApiKey,
+    used_key: keystore.Key,
     run_id: str,
     dataset_id: str | None,
     initial_run_data: dict[str, Any] | None = None,
@@ -147,7 +129,6 @@ async def _poll_and_finalize(
             run_data = await apify_client.get_run(used_key.token, run_id)
         except ApifyAuthError:
             used_key.is_bad = True
-            session.commit()
             raise
         status = (run_data.get("status") or "").upper()
         dataset_id = run_data.get("defaultDatasetId") or dataset_id
@@ -209,9 +190,15 @@ async def _resume_job(job_id: int) -> None:
         job = session.get(Job, job_id)
         if not job or not job.apify_run_id:
             return
-        key = session.get(ApiKey, job.api_key_id) if job.api_key_id else None
+        # Keys live in memory, so match by label (e.g. reloaded from APIFY_TOKENS)
+        key = next(
+            (k for k in keystore.all_keys() if k.label == job.api_key_label), None
+        )
         if not key:
-            raise ApifyError("No API key recorded for orphaned Apify run")
+            raise ApifyError(
+                "The app restarted during this scrape and its API key isn't loaded any more. "
+                "Start the scrape again."
+            )
         await _poll_and_finalize(session, job, key, job.apify_run_id, job.apify_dataset_id)
     except Exception as e:
         log.exception("Resumed job %s failed", job_id)
@@ -233,6 +220,16 @@ async def resume_orphaned_jobs() -> None:
     """Schedule all persisted running jobs that have an Apify run id."""
     session = get_session()
     try:
+        # Pipeline jobs chain several runs in memory and can't be resumed.
+        for job in (
+            session.query(Job)
+            .filter(Job.status.in_(("queued", "running")), Job.engine == "pipeline")
+            .all()
+        ):
+            job.status = "failed"
+            job.error_message = "The app was restarted while this scrape was running. Start it again."
+            job.finished_at = _utcnow()
+        session.commit()
         job_ids = [
             row.id
             for row in session.query(Job)
@@ -258,6 +255,12 @@ async def run_job(job_id: int) -> None:
         job.started_at = _utcnow()
         session.commit()
 
+        if job.engine == "pipeline":
+            from app.pipeline import Pipeline
+
+            await Pipeline(session, job).run()
+            return
+
         keywords = json.loads(job.keywords_json or "[]")
         hashtags = json.loads(job.hashtags_json or "[]")
         seed_usernames = json.loads(job.seed_usernames_json or "[]")
@@ -281,34 +284,15 @@ async def run_job(job_id: int) -> None:
         tried_ids: set[int] = set()
         last_err: str | None = None
         run_data: dict[str, Any] | None = None
-        used_key: ApiKey | None = None
+        used_key: keystore.Key | None = None
 
         while True:
-            # refresh key list each attempt
-            keys = (
-                session.query(ApiKey)
-                .filter(ApiKey.enabled.is_(True), ApiKey.is_bad.is_(False))
-                .order_by(ApiKey.id)
-                .all()
-            )
-            candidates = [k for k in keys if k.id not in tried_ids]
+            candidates = [k for k in keystore.all_keys() if k.enabled and k.id not in tried_ids]
             if not candidates:
-                # one more pass: any enabled
-                keys_any = (
-                    session.query(ApiKey)
-                    .filter(ApiKey.enabled.is_(True))
-                    .order_by(ApiKey.id)
-                    .all()
-                )
-                candidates = [k for k in keys_any if k.id not in tried_ids]
-            if not candidates:
-                raise ApifyError(last_err or "No enabled Apify API keys configured")
-
-            key = candidates[0]
-            # Prefer round-robin among remaining
-            key = pick_next_key(session) or key
-            if key.id in tried_ids:
-                key = candidates[0]
+                raise ApifyError(last_err or "No Apify API keys loaded — add one on the API keys page")
+            key = pick_next_key()
+            if key is None or key.id in tried_ids:
+                key = next((k for k in candidates if not k.is_bad), candidates[0])
             tried_ids.add(key.id)
 
             try:
@@ -322,14 +306,13 @@ async def run_job(job_id: int) -> None:
                 last_err = str(e)
                 log.warning("Job %s auth failed for key label=%s", job_id, key.label)
                 key.is_bad = True
-                session.commit()
                 continue
-            except ApifyError as e:
+            except apify_client.ApifyKeyUnavailableError as e:
                 last_err = str(e)
-                raise
+                log.warning("Job %s key label=%s unavailable; trying next", job_id, key.label)
+                continue
 
         assert used_key is not None and run_data is not None
-        job.api_key_id = used_key.id
         job.api_key_label = used_key.label
         run_id = run_data.get("id") or run_data.get("actRunId")
         dataset_id = run_data.get("defaultDatasetId")
