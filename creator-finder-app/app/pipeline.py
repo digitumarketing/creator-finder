@@ -25,7 +25,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
-from app import apify_client, linkcheck
+from app import apify_client, keystore, linkcheck
 from app.apify_client import ApifyAuthError, ApifyError, ApifyKeyUnavailableError
 from app.db import JOBS_DIR
 from app.filters import (
@@ -36,7 +36,7 @@ from app.filters import (
     normalize_row,
     write_exports,
 )
-from app.models import ApiKey, Job
+from app.models import Job
 
 log = logging.getLogger("creator_finder.pipeline")
 
@@ -75,20 +75,13 @@ def clean_hashtag(tag: str) -> str:
 class KeyPool:
     """Round-robin over enabled keys with per-job failover."""
 
-    def __init__(self, session):
-        self.session = session
+    def __init__(self):
         self.unavailable: set[int] = set()
         self._i = 0
         self.used_labels: list[str] = []
 
-    def _usable(self) -> list[ApiKey]:
-        keys = (
-            self.session.query(ApiKey)
-            .filter(ApiKey.enabled.is_(True), ApiKey.is_bad.is_(False))
-            .order_by(ApiKey.id)
-            .all()
-        )
-        return [k for k in keys if k.id not in self.unavailable]
+    def _usable(self) -> list[keystore.Key]:
+        return [k for k in keystore.usable() if k.id not in self.unavailable]
 
     async def run(self, actor: str, run_input: dict[str, Any], on_status=None):
         last_err = "No enabled Apify API keys (add one on the API keys page)"
@@ -108,7 +101,6 @@ class KeyPool:
             except ApifyAuthError as e:
                 log.warning("Key %s rejected by Apify; marking bad", key.label)
                 key.is_bad = True
-                self.session.commit()
                 last_err = f"{key.label}: {e}"
             except ApifyKeyUnavailableError as e:
                 log.warning("Key %s unavailable (%s); trying next", key.label, e)
@@ -121,7 +113,7 @@ class Pipeline:
         self.session = session
         self.job = job
         self.opts = merged_options(json.loads(job.options_json or "{}"))
-        self.pool = KeyPool(session)
+        self.pool = KeyPool()
         self.usage = {"hashtag_posts": 0, "search_results": 0, "profiles": 0, "runs": 0}
         self.warnings: list[str] = []
         # username(lower) -> {"hits": int, "via": set[str], "locations": set[str]}

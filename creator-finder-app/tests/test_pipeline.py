@@ -8,11 +8,11 @@ from datetime import datetime, timedelta, timezone
 import httpx
 import pytest
 
-from app import apify_client, db, linkcheck, pipeline
+from app import apify_client, db, keystore, linkcheck, pipeline
 from app.apify_client import ApifyAuthError, ApifyKeyUnavailableError
 from app.filters import evaluate, location_terms, match_location, normalize_row
 from app.jobs import create_job
-from app.models import ApiKey, Job
+from app.models import Job
 
 
 @pytest.fixture()
@@ -22,6 +22,7 @@ def session(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "JOBS_DIR", tmp_path / "jobs")
     monkeypatch.setattr(db, "DB_PATH", tmp_path / "test.db")
     monkeypatch.setattr(pipeline, "JOBS_DIR", tmp_path / "jobs")
+    keystore.clear()
     db.init_db()
     s = db.get_session()
     yield s
@@ -84,8 +85,7 @@ def _fake_actor(calls):
 
 
 def _make_job(session, **kw):
-    session.add(ApiKey(label="a", token="apify_api_aaaaaaaaaa"))
-    session.commit()
+    keystore.add("a", "apify_api_aaaaaaaaaa")
     defaults = dict(
         niche="parenting",
         keywords=["toddler meals"],
@@ -161,8 +161,7 @@ def test_skip_seen_avoids_paying_twice(session, monkeypatch):
 
 def test_keypool_rotates_past_bad_and_exhausted_keys(session, monkeypatch):
     for label in ("bad", "broke", "good"):
-        session.add(ApiKey(label=label, token=f"apify_api_{label}xxxxxx"))
-    session.commit()
+        keystore.add(label, f"apify_api_{label}xxxxxx")
 
     async def fake(token, actor, run_input, on_status=None):
         if "bad" in token:
@@ -172,11 +171,10 @@ def test_keypool_rotates_past_bad_and_exhausted_keys(session, monkeypatch):
         return [{"ok": 1}], {}
 
     monkeypatch.setattr(apify_client, "run_actor", fake)
-    pool = pipeline.KeyPool(session)
+    pool = pipeline.KeyPool()
     assert asyncio.run(pool.run("x", {})) == [{"ok": 1}]
     assert pool.used_labels == ["good"]
-    bad = session.query(ApiKey).filter_by(label="bad").one()
-    broke = session.query(ApiKey).filter_by(label="broke").one()
+    bad, broke, _ = keystore.all_keys()
     assert bad.is_bad is True
     assert broke.is_bad is False  # out of credit is not "invalid"
 
@@ -228,3 +226,65 @@ def test_location_terms_and_match():
     assert match_location({"biography": "Mom in Dallas 🤠"}, terms) == "dallas"
     # "us" must not match inside words
     assert match_location({"biography": "just us moms"}, location_terms("uk")) == ""
+
+
+def test_keys_never_reach_the_database(session, tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    token = "apify_api_SECRETSECRETSECRET1234"
+    with TestClient(app) as client:
+        r = client.post("/keys/add", data={"label": "main", "token": token},
+                        follow_redirects=False)
+        assert r.status_code == 303
+        page = client.get("/keys").text
+        assert "main" in page and token not in page and "…1234" in page
+    assert token.encode() not in (tmp_path / "test.db").read_bytes()
+    for f in tmp_path.rglob("*"):
+        if f.is_file():
+            assert token.encode() not in f.read_bytes(), f
+
+
+def test_old_database_keys_are_wiped(tmp_path, monkeypatch):
+    import sqlite3
+
+    path = tmp_path / "old.db"
+    con = sqlite3.connect(path)
+    con.executescript(
+        """CREATE TABLE api_keys (id INTEGER PRIMARY KEY, label TEXT, token TEXT);
+        INSERT INTO api_keys VALUES (1, 'grok-bot', 'apify_api_LEAKEDLEAKED9999');
+        CREATE TABLE jobs (id INTEGER PRIMARY KEY, niche TEXT, status TEXT,
+          keywords_json TEXT DEFAULT '[]', hashtags_json TEXT DEFAULT '[]',
+          api_key_id INTEGER REFERENCES api_keys(id), created_at DATETIME);
+        INSERT INTO jobs (id, niche, status, api_key_id) VALUES (1, 'x', 'succeeded', 1);"""
+    )
+    con.commit()
+    con.close()
+    monkeypatch.setattr(db, "_engine", None)
+    monkeypatch.setattr(db, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(db, "JOBS_DIR", tmp_path / "jobs")
+    monkeypatch.setattr(db, "DB_PATH", path)
+    db.init_db()
+    db._engine.dispose()
+    assert b"LEAKEDLEAKED" not in path.read_bytes()
+
+
+def test_load_tokens_from_env(monkeypatch):
+    keystore.clear()
+    monkeypatch.setenv("APIFY_TOKENS", "main:apify_api_one1111, apify_api_two2222")
+    assert keystore.load_from_env() == 2
+    labels = [k.label for k in keystore.all_keys()]
+    assert labels == ["main", "env-2"]
+    keystore.clear()
+
+
+def test_app_password(session, monkeypatch):
+    from fastapi.testclient import TestClient
+    import app.main as main
+
+    monkeypatch.setattr(main, "_APP_PASSWORD", "s3cret")
+    with TestClient(main.app) as client:
+        assert client.get("/keys").status_code == 401
+        assert client.get("/keys", auth=("admin", "wrong")).status_code == 401
+        assert client.get("/keys", auth=("admin", "s3cret")).status_code == 200
+        assert client.get("/health").status_code == 200

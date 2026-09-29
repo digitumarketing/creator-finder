@@ -4,7 +4,8 @@ Local web app for **Instagram creator discovery + filtering** aimed at micro-cre
 
 Niche is an input. You manage multiple Apify API keys; the app runs Apify Instagram scrapers, applies filters, shows results, and exports CSV.
 
-Runs only on your machine. Binds to `127.0.0.1` by default. Secrets live in local SQLite under `data/` (gitignored).
+Runs on your machine (binds to `127.0.0.1`) or in a GitHub Codespace. **Apify keys are kept in memory only.
+They are never written to the database, disk or logs.** Job results live in local SQLite under `data/` (gitignored).
 
 ## Stack
 
@@ -34,13 +35,39 @@ start.bat           # Windows
 
 Open **http://127.0.0.1:8787**
 
+### Run in the cloud (GitHub Codespaces)
+
+1. On the repo page on GitHub, pick the branch, then click **Code → Codespaces → Create codespace**.
+2. Wait about 2 minutes. The app installs and starts by itself, and a browser tab opens on port 8787.
+   If it doesn't, open the **Ports** tab and click the globe icon next to 8787.
+3. That `https://…app.github.dev` link is your temporary cloud link. It's **private by default**:
+   only you, signed in to GitHub, can open it. Don't switch the port to "Public".
+4. Stop the codespace when you're done (github.com/codespaces → ⋯ → Stop) to save free hours.
+
+### Keeping keys across restarts (optional)
+
+Keys you paste on the API keys page disappear when the app stops. To load them automatically, set the
+`APIFY_TOKENS` environment variable before starting:
+
+```bash
+APIFY_TOKENS="main:apify_api_xxx,backup:apify_api_yyy" ./start.sh
+```
+
+In Codespaces, add `APIFY_TOKENS` under GitHub → Settings → Codespaces → Secrets. GitHub stores it
+encrypted, outside the repo. Never put tokens in a file inside this folder.
+
+### Password (when not on your own computer)
+
+Set `APP_PASSWORD` (and optionally `APP_USERNAME`, default `admin`). Every page then asks for a login.
+Use this if you ever host the app anywhere other than your laptop or a private codespace.
+
 ## How to use
 
 ### 1. Add Apify API keys (`/keys`)
 
 1. Open **API keys**.
 2. Enter a label (e.g. `main`) and your Apify API token.
-3. After save, only a masked token is shown (`apify_…xxxx`).
+3. After adding, only a masked token is shown (`apify_…xxxx`). The key lives in memory until the app stops.
 4. Use **Test** to call `GET https://api.apify.com/v2/users/me` and confirm username + plan.
 5. Enable/disable or delete keys as needed.
 
@@ -106,7 +133,8 @@ creator-finder-app/
   app/
     main.py           # FastAPI routes
     db.py             # SQLite engine
-    models.py         # ApiKey, Job
+    models.py         # Job
+    keystore.py       # In-memory Apify keys
     apify_client.py   # Apify REST helpers
     filters.py        # Normalize + filter (vendored)
     jobs.py           # Background runner + key failover
@@ -124,9 +152,11 @@ creator-finder-app/
 ## Security notes
 
 - Bind to `127.0.0.1` only (do not expose to the network without auth).
-- Tokens are stored only in local SQLite; never logged.
-- Full tokens are never rendered in HTML after save.
-- `data/` is gitignored — do not commit real keys.
+- API tokens are held in memory only (`app/keystore.py`); never written to SQLite, files or logs.
+  On startup the app deletes any keys an older version saved in `data/app.db`.
+- Full tokens are never rendered in HTML after adding.
+- Optional `APP_PASSWORD` login for non-local hosting.
+- `data/` is gitignored.
 
 ## Filter defaults (exclude selling)
 

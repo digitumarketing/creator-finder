@@ -64,10 +64,22 @@ def init_db() -> None:
             conn.exec_driver_sql("ALTER TABLE jobs ADD COLUMN options_json TEXT")
         if "usage_json" not in columns:
             conn.exec_driver_sql("ALTER TABLE jobs ADD COLUMN usage_json TEXT")
+        # API keys are kept in memory only (app/keystore.py). Remove any that
+        # older versions saved here, and VACUUM so they're gone from the file.
+        tables = {row[0] for row in conn.exec_driver_sql(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        if "api_keys" in tables:
+            conn.exec_driver_sql("UPDATE jobs SET api_key_id = NULL")
+            wiped = conn.exec_driver_sql("DELETE FROM api_keys").rowcount
+        else:
+            wiped = 0
         if "platform" not in columns:
             conn.exec_driver_sql(
                 "ALTER TABLE jobs ADD COLUMN platform VARCHAR(40) DEFAULT 'instagram'"
             )
+    if wiped:
+        with engine.connect() as conn:
+            conn.execution_options(isolation_level="AUTOCOMMIT").exec_driver_sql("VACUUM")
 
 
 def get_session():

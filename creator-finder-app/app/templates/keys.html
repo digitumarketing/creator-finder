@@ -4,7 +4,7 @@
 <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
   <div>
     <h1 class="text-2xl font-bold tracking-tight">Apify API keys</h1>
-    <p class="text-slate-400 mt-1 text-sm">Manage multiple tokens. Full tokens are never shown after save.</p>
+    <p class="text-slate-400 mt-1 text-sm">Manage multiple tokens. Full tokens are never shown after adding.</p>
   </div>
 </div>
 
@@ -14,6 +14,10 @@
 {% if err %}
 <div class="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm">{{ err }}</div>
 {% endif %}
+
+<div class="mb-6 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sky-100 text-sm">
+  🔒 Keys are kept <strong>in memory only</strong>. They are never written to the database, to disk or to logs, so they disappear when the app stops. After a restart, add them here again, or start the app with the <code class="text-sky-200">APIFY_TOKENS</code> environment variable (see README).
+</div>
 
 <div class="card p-6 mb-6">
   <h2 class="text-sm font-semibold text-slate-300 mb-4">Add key</h2>
@@ -26,7 +30,7 @@
       <label class="field-label" for="token">API token</label>
       <input class="field font-mono text-sm" id="token" name="token" type="password" placeholder="apify_api_…" required autocomplete="off" />
     </div>
-    <button type="submit" class="btn btn-primary h-[42px]">Save key</button>
+    <button type="submit" class="btn btn-primary h-[42px]">Add key</button>
   </form>
 </div>
 
@@ -46,7 +50,7 @@
       <tbody>
         {% for k in keys %}
         <tr>
-          <td class="font-medium text-slate-200">{{ k.label }}</td>
+          <td class="font-medium text-slate-200">{{ k.label }}{% if k.source == 'env' %} <span class="text-xs text-slate-500">(APIFY_TOKENS)</span>{% endif %}</td>
           <td><code class="text-slate-400 text-xs">{{ k.masked }}</code></td>
           <td>
             {% if not k.enabled %}

@@ -1,8 +1,11 @@
 """Creator Finder — FastAPI app (localhost only by default)."""
 from __future__ import annotations
 
+import base64
 import json
 import logging
+import os
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,15 +13,15 @@ from types import SimpleNamespace
 from typing import Optional
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app import apify_client
+from app import apify_client, keystore
 from app.apify_client import ApifyAuthError, ApifyError
 from app.db import JOBS_DIR, init_db, get_session
 from app.jobs import create_job, parse_lines, resume_orphaned_jobs, schedule_job
-from app.models import ApiKey, Job
+from app.models import Job
 from app.pipeline import DEFAULT_OPTIONS, merged_options
 
 logging.basicConfig(
@@ -33,12 +36,41 @@ APP_DIR = Path(__file__).resolve().parent
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    init_db()
+    init_db()  # also wipes any API keys an older version saved to the database
+    n = keystore.load_from_env()
+    if n:
+        logging.getLogger("creator_finder").info("Loaded %s Apify key(s) from APIFY_TOKENS", n)
     await resume_orphaned_jobs()
     yield
 
 
 app = FastAPI(title="Creator Finder", lifespan=lifespan)
+
+# Optional login for when the app runs somewhere other than your own computer.
+# Set APP_PASSWORD (and optionally APP_USERNAME, default "admin").
+_APP_PASSWORD = os.environ.get("APP_PASSWORD", "")
+_APP_USERNAME = os.environ.get("APP_USERNAME", "admin")
+
+
+@app.middleware("http")
+async def require_password(request: Request, call_next):
+    if not _APP_PASSWORD or request.url.path == "/health":
+        return await call_next(request)
+    header = request.headers.get("authorization", "")
+    if header.startswith("Basic "):
+        try:
+            user, _, pw = base64.b64decode(header[6:]).decode().partition(":")
+        except (ValueError, UnicodeDecodeError):
+            user, pw = "", ""
+        if secrets.compare_digest(user, _APP_USERNAME) and secrets.compare_digest(
+            pw, _APP_PASSWORD
+        ):
+            return await call_next(request)
+    return Response(
+        "Login required",
+        status_code=401,
+        headers={"WWW-Authenticate": 'Basic realm="Creator Finder"'},
+    )
 app.mount("/static", StaticFiles(directory=str(APP_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
 
@@ -70,16 +102,8 @@ templates.env.globals["fmt_dt"] = _fmt_dt
 @app.get("/", response_class=HTMLResponse)
 @app.get("/scrape", response_class=HTMLResponse)
 async def scrape_page(request: Request):
-    session = get_session()
-    try:
-        key_count = (
-            session.query(ApiKey)
-            .filter(ApiKey.enabled.is_(True), ApiKey.is_bad.is_(False))
-            .count()
-        )
-        total_keys = session.query(ApiKey).count()
-    finally:
-        session.close()
+    key_count = len(keystore.usable())
+    total_keys = len(keystore.all_keys())
     return templates.TemplateResponse(
         request,
         "scrape.html",
@@ -155,11 +179,7 @@ async def scrape_submit(
 
     session = get_session()
     try:
-        key_count = (
-            session.query(ApiKey)
-            .filter(ApiKey.enabled.is_(True))
-            .count()
-        )
+        key_count = len([k for k in keystore.all_keys() if k.enabled])
         if key_count == 0:
             return templates.TemplateResponse(
                 request,
@@ -201,7 +221,7 @@ async def scrape_submit(
                     "scrape.html",
                     {
                         "key_count": key_count,
-                        "total_keys": session.query(ApiKey).count(),
+                        "total_keys": len(keystore.all_keys()),
                         "error": "Provide at least one keyword or X/Twitter handle.",
                         "form": _form_ctx(),
                         **_tpl_extras(),
@@ -214,7 +234,7 @@ async def scrape_submit(
                 "scrape.html",
                 {
                     "key_count": key_count,
-                    "total_keys": session.query(ApiKey).count(),
+                    "total_keys": len(keystore.all_keys()),
                     "error": "Provide at least one keyword, hashtag, or seed username.",
                     "form": _form_ctx(),
                     **_tpl_extras(),
@@ -277,28 +297,23 @@ async def scrape_submit(
 
 @app.get("/keys", response_class=HTMLResponse)
 async def keys_page(request: Request, msg: Optional[str] = None, err: Optional[str] = None):
-    session = get_session()
-    try:
-        keys = session.query(ApiKey).order_by(ApiKey.id).all()
-        # Detach values we need so template doesn't need open session
-        rows = [
-            {
-                "id": k.id,
-                "label": k.label,
-                "masked": k.masked_token(),
-                "enabled": k.enabled,
-                "is_bad": k.is_bad,
-                "last_tested_at": k.last_tested_at,
-                "last_test_ok": k.last_test_ok,
-                "last_test_username": k.last_test_username,
-                "last_test_plan": k.last_test_plan,
-                "last_test_error": k.last_test_error,
-                "created_at": k.created_at,
-            }
-            for k in keys
-        ]
-    finally:
-        session.close()
+    rows = [
+        {
+            "id": k.id,
+            "label": k.label,
+            "masked": k.masked_token(),
+            "enabled": k.enabled,
+            "is_bad": k.is_bad,
+            "source": k.source,
+            "last_tested_at": k.last_tested_at,
+            "last_test_ok": k.last_test_ok,
+            "last_test_username": k.last_test_username,
+            "last_test_plan": k.last_test_plan,
+            "last_test_error": k.last_test_error,
+            "created_at": k.created_at,
+        }
+        for k in keystore.all_keys()
+    ]
     return templates.TemplateResponse(
         request,
         "keys.html",
@@ -312,94 +327,55 @@ async def keys_add(label: str = Form(...), token: str = Form(...)):
     token = token.strip()
     if not label or not token:
         return RedirectResponse(url="/keys?err=Label+and+token+required", status_code=303)
-    session = get_session()
-    try:
-        session.add(ApiKey(label=label, token=token, enabled=True, is_bad=False))
-        session.commit()
-    finally:
-        session.close()
-    return RedirectResponse(url="/keys?msg=Key+added", status_code=303)
+    keystore.add(label, token)
+    return RedirectResponse(url="/keys?msg=Key+added+(kept+in+memory+only)", status_code=303)
 
 
 @app.post("/keys/{key_id}/toggle")
 async def keys_toggle(key_id: int):
-    session = get_session()
-    try:
-        k = session.get(ApiKey, key_id)
-        if not k:
-            raise HTTPException(404)
-        k.enabled = not k.enabled
-        if k.enabled:
-            k.is_bad = False  # give it another chance
-        session.commit()
-    finally:
-        session.close()
+    k = keystore.get(key_id)
+    if not k:
+        raise HTTPException(404)
+    k.enabled = not k.enabled
+    if k.enabled:
+        k.is_bad = False  # give it another chance
     return RedirectResponse(url="/keys?msg=Updated", status_code=303)
 
 
 @app.post("/keys/{key_id}/delete")
 async def keys_delete(key_id: int):
-    session = get_session()
-    try:
-        k = session.get(ApiKey, key_id)
-        if k:
-            session.delete(k)
-            session.commit()
-    finally:
-        session.close()
+    keystore.delete(key_id)
     return RedirectResponse(url="/keys?msg=Deleted", status_code=303)
 
 
 @app.post("/keys/{key_id}/test")
 async def keys_test(key_id: int):
-    session = get_session()
-    try:
-        k = session.get(ApiKey, key_id)
-        if not k:
-            raise HTTPException(404)
-        token = k.token
-        kid = k.id
-    finally:
-        session.close()
-
+    k = keystore.get(key_id)
+    if not k:
+        raise HTTPException(404)
     err_msg = None
+    username = plan = None
     try:
-        info = await apify_client.test_token(token)
+        info = await apify_client.test_token(k.token)
         ok = True
         username = info["username"]
         plan = info["plan"]
-    except ApifyAuthError as e:
+    except (ApifyAuthError, ApifyError) as e:
         ok = False
-        username = None
-        plan = None
-        err_msg = str(e)
-    except ApifyError as e:
-        ok = False
-        username = None
-        plan = None
         err_msg = str(e)
     except Exception as e:
         ok = False
-        username = None
-        plan = None
         err_msg = f"Test failed: {e}"
 
-    session = get_session()
-    try:
-        k = session.get(ApiKey, kid)
-        if k:
-            k.last_tested_at = datetime.now(timezone.utc)
-            k.last_test_ok = ok
-            k.last_test_username = username
-            k.last_test_plan = plan
-            k.last_test_error = err_msg
-            if not ok and isinstance(err_msg, str) and "Invalid" in err_msg:
-                k.is_bad = True
-            elif ok:
-                k.is_bad = False
-            session.commit()
-    finally:
-        session.close()
+    k.last_tested_at = datetime.now(timezone.utc)
+    k.last_test_ok = ok
+    k.last_test_username = username
+    k.last_test_plan = plan
+    k.last_test_error = err_msg
+    if not ok and isinstance(err_msg, str) and "Invalid" in err_msg:
+        k.is_bad = True
+    elif ok:
+        k.is_bad = False
 
     q = "msg=Test+OK" if ok else f"err={err_msg or 'Test failed'}"
     return RedirectResponse(url=f"/keys?{q}", status_code=303)
@@ -407,14 +383,9 @@ async def keys_test(key_id: int):
 
 @app.post("/keys/{key_id}/clear-bad")
 async def keys_clear_bad(key_id: int):
-    session = get_session()
-    try:
-        k = session.get(ApiKey, key_id)
-        if k:
-            k.is_bad = False
-            session.commit()
-    finally:
-        session.close()
+    k = keystore.get(key_id)
+    if k:
+        k.is_bad = False
     return RedirectResponse(url="/keys?msg=Cleared+bad+flag", status_code=303)
 
 
