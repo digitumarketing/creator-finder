@@ -1,0 +1,101 @@
+/* Extra polish beyond Tailwind utilities */
+input, textarea, select {
+  color-scheme: dark;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.badge-queued { background: #334155; color: #e2e8f0; }
+.badge-running { background: #1e3a8a; color: #93c5fd; }
+.badge-succeeded { background: #064e3b; color: #6ee7b7; }
+.badge-failed { background: #7f1d1d; color: #fca5a5; }
+.card {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 1rem;
+  box-shadow: 0 10px 40px -20px rgba(0,0,0,0.6);
+}
+.field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+.field {
+  width: 100%;
+  background: #0b0f19;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+}
+.field:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #a21caf);
+  color: white;
+  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.5);
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.1); }
+.btn-danger {
+  background: rgba(127, 29, 29, 0.4);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+.btn-danger:hover { background: rgba(127, 29, 29, 0.7); }
+.btn-sm { padding: 0.3rem 0.65rem; font-size: 0.75rem; }
+table.data th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+table.data td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.85rem;
+  vertical-align: top;
+}
+table.data tr:hover td { background: rgba(255,255,255,0.02); }
+.bio-snip {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #94a3b8;
+}
+
+.badge-platform-ig { background: #831843; color: #fbcfe8; }
+.badge-platform-x { background: #0f172a; color: #e2e8f0; border: 1px solid rgba(148,163,184,0.35); }

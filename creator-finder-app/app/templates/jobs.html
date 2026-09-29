@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Jobs · Creator Finder{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight">Jobs</h1>
+    <p class="text-slate-400 mt-1 text-sm">Recent scrape runs and filter results.</p>
+  </div>
+  <a href="/scrape" class="btn btn-primary">New scrape</a>
+</div>
+
+<div class="card overflow-hidden">
+  {% if jobs %}
+  <div class="overflow-x-auto">
+    <table class="data w-full">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Niche</th>
+          <th>Platform</th>
+          <th>Status</th>
+          <th>Qualified</th>
+          <th>Raw</th>
+          <th>Key</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for j in jobs %}
+        <tr>
+          <td class="text-slate-500">#{{ j.id }}</td>
+          <td class="font-medium text-slate-200">{{ j.niche }}</td>
+          <td>
+            {% if j.platform == 'twitter' %}
+            <span class="badge badge-platform-x">X</span>
+            {% else %}
+            <span class="badge badge-platform-ig">IG</span>
+            {% endif %}
+          </td>
+          <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
+          <td>{{ j.qualified_count }}</td>
+          <td class="text-slate-400">{{ j.raw_count }}</td>
+          <td class="text-slate-400 text-xs">{{ j.api_key_label or '—' }}</td>
+          <td class="text-slate-500 text-xs whitespace-nowrap">{{ fmt_dt(j.created_at) }}</td>
+          <td><a href="/jobs/{{ j.id }}" class="btn btn-ghost btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="p-10 text-center text-slate-500 text-sm">
+    No jobs yet. <a href="/scrape" class="text-accent-soft hover:underline">Start a scrape</a>.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

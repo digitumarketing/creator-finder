@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}New scrape · Creator Finder{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-bold tracking-tight">New scrape</h1>
+  <p class="text-slate-400 mt-1 text-sm" id="page-subtitle">Discover Instagram creators via Apify, then filter for Manyreach outreach.</p>
+</div>
+
+{% if key_count == 0 %}
+<div class="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div>
+    <p class="font-semibold text-amber-200">No Apify API keys configured</p>
+    <p class="text-sm text-amber-200/70">Add at least one key before starting a scrape.</p>
+  </div>
+  <a href="/keys" class="btn btn-primary whitespace-nowrap">Add API key →</a>
+</div>
+{% endif %}
+
+{% if error %}
+<div class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm">{{ error }}</div>
+{% endif %}
+
+{% set form_platform = form.platform if form is defined and form.platform is defined else 'instagram' %}
+
+<form method="post" action="/scrape" class="card p-6 space-y-6" id="scrape-form">
+  <div>
+    <span class="field-label">Platform</span>
+    <div class="flex flex-wrap gap-4 mt-1">
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="radio" name="platform" value="instagram" id="platform-instagram"
+          {% if form_platform != 'twitter' %}checked{% endif %}
+          class="border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Instagram</span>
+      </label>
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="radio" name="platform" value="twitter" id="platform-twitter"
+          {% if form_platform == 'twitter' %}checked{% endif %}
+          class="border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Twitter / X</span>
+      </label>
+    </div>
+    <p class="text-xs text-slate-500 mt-1" id="platform-tip">Instagram uses the creator-leads scraper. Twitter/X uses a pay-per-event lead scraper (~$0.90 / 1k profiles).</p>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-5">
+    <div>
+      <label class="field-label" for="niche">Niche name</label>
+      <input class="field" id="niche" name="niche" placeholder="e.g. parenting" value="{{ form.niche if form is defined else '' }}" />
+      <p class="text-xs text-slate-500 mt-1">Label only — used in exports &amp; job list.</p>
+    </div>
+    <div>
+      <label class="field-label" for="location">Location <span class="text-slate-600">(optional)</span></label>
+      <input class="field" id="location" name="location" placeholder="e.g. USA, London" value="{{ form.location if form is defined else '' }}" />
+      <p class="text-xs text-slate-500 mt-1" id="location-hint">Mapped countries are sent as a country filter; other locations are appended to terms.</p>
+    </div>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-5">
+    <div>
+      <label class="field-label" for="keywords" id="keywords-label">Keywords / search terms <span class="text-slate-600">(optional if seeds set)</span></label>
+      <textarea class="field font-mono text-sm" id="keywords" name="keywords" rows="6" placeholder="newborn tips&#10;toddler meal prep">{{ form.keywords if form is defined else '' }}</textarea>
+      <p class="text-xs text-slate-500 mt-1" id="keywords-hint">One per line. Optional when seed usernames are set. Prefer 5–8 focused keyword phrases per run.</p>
+    </div>
+    <div id="hashtags-wrap">
+      <label class="field-label" for="hashtags">Hashtags <span class="text-slate-600">(optional)</span></label>
+      <textarea class="field font-mono text-sm" id="hashtags" name="hashtags" rows="6" placeholder="newbornsleep&#10;firsttimemom&#10;#gentleparenting">{{ form.hashtags if form is defined else '' }}</textarea>
+      <p class="text-xs text-slate-500 mt-1" id="hashtags-hint">One per line; <code class="text-slate-400">#</code> optional. For United States, use the location field—do not repeat it in each keyword.</p>
+      <p class="text-xs text-slate-600 mt-1 hidden" id="hashtags-unused">Hashtags are not used for Twitter/X discovery.</p>
+    </div>
+  </div>
+
+  <div class="border-t border-white/5 pt-5">
+    <h2 class="text-sm font-semibold text-slate-300 mb-1" id="seed-heading">Seed discovery</h2>
+    <p class="text-xs text-slate-500 mb-4" id="seed-blurb">When keyword search is rate-limited, paste 5–10 known micro creators in the niche; the actor expands from them to related creators. Keywords are optional if seeds are set. Avoid mega accounts as seeds.</p>
+    <div>
+      <label class="field-label" for="seed_usernames" id="seed-label">Instagram seed usernames</label>
+      <textarea class="field font-mono text-sm" id="seed_usernames" name="seed_usernames" rows="5" placeholder="fitmomusername&#10;homefitnesscoach&#10;@microcreator">{{ form.seed_usernames if form is defined else '' }}</textarea>
+      <p class="text-xs text-slate-500 mt-1" id="seed-hint">One per line; <code class="text-slate-400">@</code> and profile URLs optional — stored as bare handles.</p>
+    </div>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer select-none mt-4" id="seed-discovery-wrap">
+      <input type="checkbox" name="seed_discovery" id="seed_discovery" {% if form is not defined or form.seed_discovery %}checked{% endif %} class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+      <span class="text-sm text-slate-300">Discover related creators from these seeds</span>
+    </label>
+  </div>
+
+  <div class="border-t border-white/5 pt-5">
+    <h2 class="text-sm font-semibold text-slate-300 mb-4">Filters</h2>
+    <div class="grid sm:grid-cols-3 gap-5">
+      <div>
+        <label class="field-label" for="min_followers">Min followers</label>
+        <input class="field" type="number" id="min_followers" name="min_followers" value="10000" min="0" />
+      </div>
+      <div>
+        <label class="field-label" for="max_followers">Max followers</label>
+        <input class="field" type="number" id="max_followers" name="max_followers" value="100000" min="0" />
+      </div>
+      <div>
+        <label class="field-label" for="min_engagement_rate">Min engagement rate %</label>
+        <input class="field" type="number" id="min_engagement_rate" name="min_engagement_rate" value="0" min="0" step="0.1" />
+        <p class="text-xs text-slate-500 mt-1">0 = off</p>
+      </div>
+    </div>
+
+    <div class="mt-5 flex flex-col sm:flex-row gap-4">
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" name="require_email" checked class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Require public email</span>
+      </label>
+      <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" name="exclude_selling" checked class="rounded border-slate-600 bg-ink-950 text-accent focus:ring-accent" />
+        <span class="text-sm text-slate-300">Exclude already selling digital products</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="border-t border-white/5 pt-5 grid sm:grid-cols-2 gap-5">
+    <div>
+      <label class="field-label" for="max_leads">Max leads</label>
+      <input class="field" type="number" id="max_leads" name="max_leads" value="50" min="1" max="200" />
+      <p class="text-xs text-slate-500 mt-1">Capped at 200 for safety.</p>
+    </div>
+    <div>
+      <label class="field-label" for="actor_id">Apify actor</label>
+      <input class="field font-mono text-sm" id="actor_id" name="actor_id" value="{{ default_actor }}" />
+      <p class="text-xs text-slate-500 mt-1" id="actor-hint">Default switches with platform.</p>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between pt-2">
+    <p class="text-xs text-slate-500">
+      {% if key_count > 0 %}
+        {{ key_count }} enabled key{{ 's' if key_count != 1 else '' }} · round-robin with failover
+      {% else %}
+        Keys required
+      {% endif %}
+    </p>
+    <button type="submit" class="btn btn-primary" {% if key_count == 0 %}disabled style="opacity:0.5;cursor:not-allowed"{% endif %}>
+      Start scrape
+    </button>
+  </div>
+</form>
+
+<script>
+(function () {
+  const IG_ACTOR = {{ default_instagram_actor | tojson }};
+  const X_ACTOR = {{ default_twitter_actor | tojson }};
+  const igRadio = document.getElementById('platform-instagram');
+  const xRadio = document.getElementById('platform-twitter');
+  const actorInput = document.getElementById('actor_id');
+  const subtitle = document.getElementById('page-subtitle');
+  const platformTip = document.getElementById('platform-tip');
+  const locationHint = document.getElementById('location-hint');
+  const keywordsHint = document.getElementById('keywords-hint');
+  const hashtagsWrap = document.getElementById('hashtags-wrap');
+  const hashtagsHint = document.getElementById('hashtags-hint');
+  const hashtagsUnused = document.getElementById('hashtags-unused');
+  const hashtagsField = document.getElementById('hashtags');
+  const seedHeading = document.getElementById('seed-heading');
+  const seedBlurb = document.getElementById('seed-blurb');
+  const seedLabel = document.getElementById('seed-label');
+  const seedHint = document.getElementById('seed-hint');
+  const seedDiscoveryWrap = document.getElementById('seed-discovery-wrap');
+  const seedField = document.getElementById('seed_usernames');
+
+  function isTwitter() {
+    return xRadio && xRadio.checked;
+  }
+
+  function syncPlatform() {
+    const tw = isTwitter();
+    // Only auto-swap actor when it still matches the other platform's default
+    if (actorInput) {
+      const cur = (actorInput.value || '').trim();
+      if (tw) {
+        if (!cur || cur === IG_ACTOR) actorInput.value = X_ACTOR;
+      } else {
+        if (!cur || cur === X_ACTOR) actorInput.value = IG_ACTOR;
+      }
+    }
+    if (subtitle) {
+      subtitle.textContent = tw
+        ? 'Discover X/Twitter creators via Apify, then filter for outreach.'
+        : 'Discover Instagram creators via Apify, then filter for Manyreach outreach.';
+    }
+    if (platformTip) {
+      platformTip.textContent = tw
+        ? 'Twitter/X actor: maximedupre~twitter-lead-scraper · ~$0.90 per 1k lead profiles (pay-per-event). First keyword line = main query; extra lines match bio (OR).'
+        : 'Instagram uses the creator-leads scraper. Twitter/X uses a pay-per-event lead scraper (~$0.90 / 1k profiles).';
+    }
+    if (locationHint) {
+      locationHint.textContent = tw
+        ? 'Sent as locationContains (substring match on profile location).'
+        : 'Mapped countries are sent as a country filter; other locations are appended to terms.';
+    }
+    if (keywordsHint) {
+      keywordsHint.textContent = tw
+        ? 'One per line. First line = keywordQuery; remaining lines = bioIncludeTerms (OR match in bio). Keywords take precedence over handles when both are set.'
+        : 'One per line. Optional when seed usernames are set. Prefer 5–8 focused keyword phrases per run.';
+    }
+    if (hashtagsHint) hashtagsHint.classList.toggle('hidden', tw);
+    if (hashtagsUnused) hashtagsUnused.classList.toggle('hidden', !tw);
+    if (hashtagsField) {
+      hashtagsField.disabled = tw;
+      hashtagsField.classList.toggle('opacity-40', tw);
+    }
+    if (seedHeading) seedHeading.textContent = tw ? 'Known handles (enrich)' : 'Seed discovery';
+    if (seedBlurb) {
+      seedBlurb.textContent = tw
+        ? 'Paste known X handles to enrich as lead profiles (accountReferences). Used when no keywords are set; if keywords are present, keyword discovery wins.'
+        : 'When keyword search is rate-limited, paste 5–10 known micro creators in the niche; the actor expands from them to related creators. Keywords are optional if seeds are set. Avoid mega accounts as seeds.';
+    }
+    if (seedLabel) {
+      seedLabel.textContent = tw ? 'X/Twitter handles to enrich' : 'Instagram seed usernames';
+    }
+    if (seedHint) {
+      seedHint.textContent = tw
+        ? 'One per line; @ and x.com/twitter.com URLs optional.'
+        : 'One per line; @ and profile URLs optional — stored as bare handles.';
+    }
+    if (seedField) {
+      seedField.placeholder = tw
+        ? 'fitmomhandle\nhomefitnesscoach\n@microcreator'
+        : 'fitmomusername\nhomefitnesscoach\n@microcreator';
+    }
+    if (seedDiscoveryWrap) seedDiscoveryWrap.classList.toggle('hidden', tw);
+  }
+
+  if (igRadio) igRadio.addEventListener('change', syncPlatform);
+  if (xRadio) xRadio.addEventListener('change', syncPlatform);
+  syncPlatform();
+})();
+</script>
+{% endblock %}

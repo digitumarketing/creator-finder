@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}API keys · Creator Finder{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight">Apify API keys</h1>
+    <p class="text-slate-400 mt-1 text-sm">Manage multiple tokens. Full tokens are never shown after save.</p>
+  </div>
+</div>
+
+{% if msg %}
+<div class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200 text-sm">{{ msg }}</div>
+{% endif %}
+{% if err %}
+<div class="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm">{{ err }}</div>
+{% endif %}
+
+<div class="card p-6 mb-6">
+  <h2 class="text-sm font-semibold text-slate-300 mb-4">Add key</h2>
+  <form method="post" action="/keys/add" class="grid sm:grid-cols-[1fr_2fr_auto] gap-3 items-end">
+    <div>
+      <label class="field-label" for="label">Label</label>
+      <input class="field" id="label" name="label" placeholder="main" required />
+    </div>
+    <div>
+      <label class="field-label" for="token">API token</label>
+      <input class="field font-mono text-sm" id="token" name="token" type="password" placeholder="apify_api_…" required autocomplete="off" />
+    </div>
+    <button type="submit" class="btn btn-primary h-[42px]">Save key</button>
+  </form>
+</div>
+
+<div class="card overflow-hidden">
+  {% if keys %}
+  <div class="overflow-x-auto">
+    <table class="data w-full">
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Token</th>
+          <th>Status</th>
+          <th>Last test</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for k in keys %}
+        <tr>
+          <td class="font-medium text-slate-200">{{ k.label }}</td>
+          <td><code class="text-slate-400 text-xs">{{ k.masked }}</code></td>
+          <td>
+            {% if not k.enabled %}
+              <span class="badge badge-queued">disabled</span>
+            {% elif k.is_bad %}
+              <span class="badge badge-failed">bad auth</span>
+            {% else %}
+              <span class="badge badge-succeeded">enabled</span>
+            {% endif %}
+          </td>
+          <td class="text-slate-400 text-xs">
+            {% if k.last_tested_at %}
+              {% if k.last_test_ok %}
+                <span class="text-emerald-400">OK</span> · {{ k.last_test_username or '?' }}
+                {% if k.last_test_plan %} · {{ k.last_test_plan }}{% endif %}
+              {% else %}
+                <span class="text-red-400">fail</span>
+                {% if k.last_test_error %} · {{ k.last_test_error[:80] }}{% endif %}
+              {% endif %}
+              <div class="text-slate-600 mt-0.5">{{ fmt_dt(k.last_tested_at) }}</div>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            <div class="flex flex-wrap gap-1.5 justify-end">
+              <form method="post" action="/keys/{{ k.id }}/test"><button class="btn btn-ghost btn-sm" type="submit">Test</button></form>
+              <form method="post" action="/keys/{{ k.id }}/toggle"><button class="btn btn-ghost btn-sm" type="submit">{% if k.enabled %}Disable{% else %}Enable{% endif %}</button></form>
+              {% if k.is_bad %}
+              <form method="post" action="/keys/{{ k.id }}/clear-bad"><button class="btn btn-ghost btn-sm" type="submit">Clear bad</button></form>
+              {% endif %}
+              <form method="post" action="/keys/{{ k.id }}/delete" onsubmit="return confirm('Delete this key?')"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="p-10 text-center text-slate-500 text-sm">
+    No keys yet. Add one above to start scraping.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
