@@ -1,8 +1,8 @@
 {
   "name": "Creator Finder",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  "postCreateCommand": "cd creator-finder-app && python -m venv .venv && .venv/bin/pip install -q -r requirements.txt",
-  "postAttachCommand": "cd creator-finder-app && .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8787",
+  "postCreateCommand": "cd creator-finder-app && python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt",
+  "postStartCommand": "bash creator-finder-app/cloud-start.sh",
   "forwardPorts": [8787],
   "portsAttributes": {
     "8787": {

@@ -42,7 +42,9 @@ Open **http://127.0.0.1:8787**
    If it doesn't, open the **Ports** tab and click the globe icon next to 8787.
 3. That `https://…app.github.dev` link is your temporary cloud link. It's **private by default**:
    only you, signed in to GitHub, can open it. Don't switch the port to "Public".
-4. Stop the codespace when you're done (github.com/codespaces → ⋯ → Stop) to save free hours.
+4. If the link shows **HTTP 502**, the app isn't running. In the codespace's **Terminal** run
+   `bash creator-finder-app/cloud-start.sh`. It (re)starts the app and prints any error.
+5. Stop the codespace when you're done (github.com/codespaces → ⋯ → Stop) to save free hours.
 
 ### Keeping keys across restarts (optional)
 
