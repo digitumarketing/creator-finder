@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digitum Markdown Viewer</title>
+<script>
+/* Apply a saved light or dark choice before first paint, so there is no flash. */
+try{ var t = localStorage.getItem("digitum-md-theme"); if(t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); }catch(e){}
+</script>
+<meta name="description" content="Open and read any markdown file in a clean, printable layout. Free tool by Digitum Marketing. Files stay in your browser, nothing is uploaded.">
+<meta name="theme-color" content="#EFEAE1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#272320" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Digitum Markdown Viewer">
+<meta property="og:description" content="Open any .md file in a clean, readable layout. Outline, search, code highlighting and one click PDF export.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAC8UlEQVR42u2Wy0tVURTG11r7HM893nv1WJoVpaZUCIElBhURlzSa9BJ6QFpBsxxFBA2CBjVo0kTqL+gBEQ1qECHYC4peFytKrkkpJJGP9F493nPPa+/VwEkFPTzVIHCNF99v8+39fWxcWVcD/3II/vHMAf5bgBAMAPtPThw6Pf6LzfJ5ViQEIsJQX9HoB625zc48Nv++RUTsu0gEK5q8n6xp0dSRQErctNuuW+Nlh8UfARABCQCAFTADCUBgoUPr8RwATI4Kq1JGByABK+CvFJQEAJQSSuZL30WlwHcxIoAEKAkkoHGLszrlVNaEQuepz6I/baS74nFLbdzs5Ccp8H4GwB+V3Yx6XYPXfmqituH7a5zOUborrum8Yee0m6cjjVWzfkVKwsq17onLw7UNHjP4LmZHRHZEzBgSK+bUPjthqftXk0UxjmJRwlIdnWOGyf3pWOZJ7MVdc/yjxgwVS8OmrU5qr40Eqzc7r+6Zd64kowRtz/Fs+RL54FrSy9ON89bYkO4VyC9QdkTrfWS+um/WrPJLF6hFtUG6q/hdT2zWFplJ9fKumdprT+eoYJOmMyIgghAsBHsOvX9pvH1mAMC6bfkoXTQ8qDe328Wl6vntOCIohczADIpRStQMbjloD742Rj9oi+qCKIANu6aRIHAx8BEAmL+JXuAhMDS2OL2PTE2P1KYJSwUeFplcVe8zg9AYCZBAaMwMldUBIs9fHMoQ7QmKAvjYr+sGBx5u78gly2ToIytgBaGPZkLtPpZjRmZgBYiR6rpg0/odec+hsgWyIeXmJynwKGHJVRvdw2fHq+oDEjzUZ9gTYnmTd/OCNesc9HQXd18qaTkwVbBp4bKgo3PMmSJEMJMqDBAQnEnq6Tab22y/EKmLkODymXm+i1sOTgmN/QLqBjNDGKCm86cB/fnt+Lpt+dIK6eYpikUzp3rz0Mw8NUmAmWAS4Bfw04DefbHk+rmy1qO5yurQcyjzOPb0VnzWZTf3bZkD/PZ8Ae4CUIQ8s9sMAAAAAElFTkSuQmCC">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MD Viewer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Digitum brand tokens (Pixel-stem identity v1.0).
+   Lime #C8FF00, Charcoal #272320, Cream #EFEAE1, one family: Outfit.
+   Working pairs: cream on charcoal, lime on charcoal, charcoal on cream or lime.
+   Lime is an accent only, never text on cream. */
+:root{
+  --brand-lime:#C8FF00;
+  --brand-charcoal:#272320;
+  --brand-cream:#EFEAE1;
+
+  --paper:#EFEAE1;
+  --surface:#F6F3ED;
+  --panel:#E6E0D5;
+  --ink:#272320;
+  --muted:#6B645C;
+  --rule:#D6CFC2;
+  --link:#272320;
+  --link-line:#272320;
+  --lime:#C8FF00;
+  --lime-ink:#272320;
+  --sync:#C8FF00;
+  --sync-soft:color-mix(in srgb,#C8FF00 30%,transparent);
+  --ok:#3D6B12;
+  --bad:#B3261E;
+  --shadow:0 1px 2px rgba(39,35,32,.06), 0 8px 24px rgba(39,35,32,.08);
+  --ui:'Outfit',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --prose:'Outfit',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --rail:290px;
+  color-scheme:light;
+}
+/* Dark theme: charcoal surface, cream text, lime accents. Applied when the
+   OS asks for it, unless the viewer has picked light, or when picked. */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#272320;
+    --surface:#2D2925;
+    --panel:#322D29;
+    --ink:#EFEAE1;
+    --muted:#A69E93;
+    --rule:#443D37;
+    --link:#C8FF00;
+    --link-line:#C8FF00;
+    --sync:#C8FF00;
+    --sync-soft:color-mix(in srgb,#C8FF00 22%,transparent);
+    --ok:#C8FF00;
+    --bad:#FF8A80;
+    --shadow:0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+  :root:not([data-theme="light"]) .logo-light{display:none !important}
+  :root:not([data-theme="light"]) .logo-dark{display:inline-block !important}
+}
+:root[data-theme="dark"]{
+  --paper:#272320;
+  --surface:#2D2925;
+  --panel:#322D29;
+  --ink:#EFEAE1;
+  --muted:#A69E93;
+  --rule:#443D37;
+  --link:#C8FF00;
+  --link-line:#C8FF00;
+  --sync:#C8FF00;
+  --sync-soft:color-mix(in srgb,#C8FF00 22%,transparent);
+  --ok:#C8FF00;
+  --bad:#FF8A80;
+  --shadow:0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+.logo-dark{display:none}
+:root[data-theme="dark"] .logo-light{display:none !important}
+:root[data-theme="dark"] .logo-dark{display:inline-block !important}
+
+*{box-sizing:border-box}
+/* Any class that sets display would otherwise beat the browser's own
+   [hidden] rule. This keeps the attribute authoritative everywhere. */
+[hidden]{display:none !important}
+html,body{height:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--ui);font-size:15px;-webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:3px}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--lime);z-index:60;transition:width .08s linear}
+
+
+/* layout */
+.app{display:flex;min-height:100vh}
+.rail{
+  width:var(--rail);flex:0 0 var(--rail);border-right:1px solid var(--rule);
+  background:var(--panel);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;
+}
+.rail-head{padding:22px 20px 16px;border-bottom:1px solid var(--rule)}
+.brand{display:inline-block;line-height:0}
+.brand img{height:34px;width:auto}
+.rail-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.btn.install{
+  display:flex;align-items:center;gap:6px;width:100%;justify-content:center;
+  background:var(--brand-charcoal);color:var(--brand-cream);border-color:transparent;font-weight:600;
+}
+:root[data-theme="dark"] .btn.install{background:var(--brand-cream);color:var(--brand-charcoal)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .btn.install{background:var(--brand-cream);color:var(--brand-charcoal)} }
+.btn.install:hover{filter:brightness(1.12)}
+.btn.install svg{flex:0 0 auto}
+.btn.install[hidden]{display:none}
+
+/* install call to action inside the page, visible on phones where the rail is hidden */
+.install-cta{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px 16px;margin-bottom:18px;border-radius:10px;
+  border:1px solid var(--rule);background:var(--panel);
+}
+.install-cta[hidden]{display:none}
+.install-cta .ic-body{flex:1;min-width:180px}
+.install-cta .ic-title{font-weight:600;font-size:15px}
+.install-cta .ic-sub{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
+.install-cta .btn{padding:10px 16px}
+
+/* add to home screen instructions, iOS only */
+.sheet-veil{
+  position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px;
+  background:rgba(39,35,32,.5);backdrop-filter:blur(3px);
+}
+.sheet-veil[hidden]{display:none}
+.sheet{
+  width:100%;max-width:400px;background:var(--paper);border-radius:14px;padding:24px;
+  box-shadow:0 12px 40px rgba(39,35,32,.3);
+}
+.sheet h2{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:0 0 4px}
+.sheet .sub{color:var(--muted);font-size:14px;margin:0 0 18px;line-height:1.55}
+.sheet ol{margin:0 0 18px;padding-left:20px;font-size:15px;line-height:1.7}
+.sheet ol li::marker{color:var(--muted);font-weight:600}
+.sheet .fine{
+  font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 18px;
+  padding-left:11px;border-left:3px solid var(--lime);
+}
+.sheet .btn{width:100%;justify-content:center;display:flex;padding:12px 16px;font-size:15px}
+.checks{margin:0 0 16px;font-size:13px;border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+.checks .row{display:flex;gap:9px;align-items:baseline;padding:3px 0}
+.checks .mark{font-weight:700;width:12px;flex:0 0 12px}
+.checks .ok .mark{color:var(--ok)}
+.checks .bad .mark{color:var(--bad)}
+.checks .bad .txt{color:var(--ink)}
+.checks .txt{color:var(--muted)}
+.checks .hint{display:block;color:var(--bad);font-size:12px;margin-top:1px}
+.btn{
+  border:1px solid var(--rule);background:var(--surface);padding:7px 12px;border-radius:7px;
+  font-size:13.5px;font-weight:500;transition:border-color .15s,background .15s,color .15s;
+}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--lime);color:var(--lime-ink);border-color:transparent;font-weight:600}
+.btn.primary:hover{filter:brightness(.94)}
+.search{padding:12px 16px;border-bottom:1px solid var(--rule)}
+.search input,.url-row input{
+  width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:7px;
+  background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;
+}
+.search input::placeholder,.url-row input::placeholder{color:var(--muted)}
+.rail-scroll{overflow-y:auto;flex:1;padding:14px 12px 24px}
+.section-label{
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding:8px 8px 6px;display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.mini{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.mini:hover{color:var(--ink)}
+.file{
+  display:block;flex:1;min-width:0;text-align:left;padding:7px 9px;border-radius:6px;font-size:13.5px;
+  color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.file[aria-current="true"]{font-weight:600}
+.file .dir{color:var(--muted);font-size:12px}
+
+/* recents */
+.recent{display:flex;align-items:center;border-radius:6px}
+.recent:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.recent-open{flex:1;min-width:0;text-align:left;padding:7px 9px}
+.recent-name{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-meta{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.recent-x{
+  width:24px;height:24px;margin-right:5px;border-radius:5px;color:var(--muted);
+  opacity:0;font-size:15px;line-height:1;flex:0 0 24px;
+}
+.recent:hover .recent-x,.recent-x:focus{opacity:1}
+.recent-x:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.store-note{font-size:11.5px;color:var(--muted);padding:4px 9px 10px;line-height:1.5}
+
+.toc a{
+  display:block;padding:5px 9px;border-radius:5px;color:var(--muted);text-decoration:none;
+  font-size:13.5px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.toc a:hover{color:var(--ink)}
+.toc a.lvl3{padding-left:22px;font-size:13px}
+.toc a.lvl4{padding-left:35px;font-size:13px}
+.toc a.active{color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--lime);background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.rail-foot{
+  border-top:1px solid var(--rule);padding:13px 20px;font-size:12px;color:var(--muted);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.rail-foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
+.rail-foot a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* main */
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;gap:12px;padding:11px 26px;
+  overflow:hidden;
+}
+.app-name{
+  display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;
+  white-space:nowrap;min-width:0;flex-shrink:1;
+  padding:5px 8px;margin-left:-8px;border-radius:7px;border:1px solid transparent;
+}
+.app-name span{overflow:hidden;text-overflow:ellipsis}
+.app-name img{flex:0 0 auto}
+.topbar .icon-btn{flex:0 0 32px}
+.app-name:hover{border-color:var(--rule);background:var(--panel)}
+.app-name img{width:17px;height:auto}
+
+/* open file rows with a close control */
+.file-row{display:flex;align-items:center;border-radius:6px}
+.file-row:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.file-row.active{background:color-mix(in srgb,var(--ink) 8%,transparent);box-shadow:inset 3px 0 0 var(--lime)}
+.file-x{
+  width:24px;height:24px;margin-right:5px;border-radius:5px;color:var(--muted);
+  opacity:0;font-size:16px;line-height:1;flex:0 0 24px;
+}
+.file-row:hover .file-x,.file-x:focus{opacity:1}
+.file-x:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 12%,transparent)}
+@media (hover:none){ .file-x,.recent-x{opacity:1;width:32px;height:32px;flex:0 0 32px;font-size:19px} }
+
+/* tapping outside the rail closes it on small screens */
+.rail-veil{
+  position:fixed;inset:0;z-index:45;background:rgba(39,35,32,.4);
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+body.rail-open .rail-veil{opacity:1;pointer-events:auto}
+@media (min-width:861px){ .rail-veil{display:none} }
+.divider{width:1px;height:17px;background:var(--rule);flex:0 0 1px}
+.crumb{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{color:var(--muted);font-size:13px;white-space:nowrap}
+.spacer{flex:1}
+.icon-btn{width:32px;height:32px;border-radius:7px;border:1px solid transparent;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{color:var(--ink);border-color:var(--rule)}
+#menuBtn{display:none}
+#themeBtn .moon{display:none}
+:root[data-theme="dark"] #themeBtn .moon{display:block}
+:root[data-theme="dark"] #themeBtn .sun{display:none}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) #themeBtn .moon{display:block}
+  :root:not([data-theme="light"]) #themeBtn .sun{display:none}
+}
+
+article{
+  width:100%;max-width:760px;margin:0 auto;padding:52px 26px 40px;
+  font-family:var(--prose);font-size:17px;line-height:1.65;
+}
+article h1,article h2,article h3,article h4,article h5,article h6{
+  font-family:var(--ui);font-weight:600;letter-spacing:-.01em;line-height:1.22;scroll-margin-top:80px;
+}
+article h1{font-size:2.15em;font-weight:700;margin:0 0 .5em}
+article h2{font-size:1.5em;margin:2em 0 .55em;padding-bottom:.3em;border-bottom:1px solid var(--rule)}
+article h3{font-size:1.2em;margin:1.7em 0 .45em}
+article h4{font-size:1.02em;margin:1.5em 0 .4em}
+article h5,article h6{font-size:.94em;color:var(--muted);margin:1.4em 0 .4em}
+article p{margin:0 0 1.1em}
+article a{color:var(--link);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px;text-decoration-color:var(--link-line)}
+article a:hover{background:var(--lime);color:var(--lime-ink);text-decoration-color:var(--lime-ink)}
+article strong{font-weight:600}
+article ul,article ol{margin:0 0 1.1em;padding-left:1.5em}
+article li{margin:.3em 0}
+article li::marker{color:var(--muted)}
+article li.task{list-style:none;margin-left:-1.2em}
+article li.task input{margin-right:.55em;accent-color:var(--lime);width:1em;height:1em;vertical-align:-.12em}
+article blockquote{
+  margin:1.6em 0;padding:.85em 1.1em .85em 1.25em;
+  border-left:4px solid var(--lime);border-radius:0 8px 8px 0;
+  background:var(--panel);color:var(--ink);font-size:1.02em;
+}
+article blockquote p:last-child{margin-bottom:0}
+article hr{border:0;border-top:1px solid var(--rule);margin:2.4em 0}
+article img{max-width:100%;height:auto;border-radius:8px;margin:.6em 0}
+article table{width:100%;border-collapse:collapse;margin:1.5em 0;font-family:var(--ui);font-size:14.5px}
+article th,article td{border:1px solid var(--rule);padding:8px 11px;text-align:left;vertical-align:top}
+article th{background:var(--panel);font-weight:600}
+article code{font-family:var(--mono);font-size:.84em;background:var(--panel);padding:.16em .38em;border-radius:4px;border:1px solid var(--rule)}
+article pre{
+  position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+  padding:16px 18px;overflow-x:auto;margin:1.5em 0;box-shadow:var(--shadow);
+}
+article pre code{background:none;border:0;padding:0;font-size:13.5px;line-height:1.65}
+.copy{
+  position:absolute;top:9px;right:9px;font-family:var(--ui);font-size:11.5px;font-weight:600;
+  padding:4px 9px;border-radius:6px;border:1px solid var(--rule);background:var(--paper);
+  color:var(--muted);opacity:0;transition:opacity .15s;
+}
+pre:hover .copy,.copy:focus{opacity:1}
+.copy:hover{color:var(--ink)}
+article mark{background:var(--lime);color:var(--lime-ink);padding:.05em .12em;border-radius:2px}
+.mermaid{margin:1.5em 0;text-align:center}
+.footnotes{font-size:.9em;color:var(--muted);border-top:1px solid var(--rule);margin-top:3em;padding-top:1em}
+
+/* ================= editor ================= */
+.status{
+  font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  padding:4px 9px;border-radius:20px;border:1px solid var(--rule);color:var(--muted);white-space:nowrap;
+}
+.status.dirty{border-color:var(--ink);color:var(--ink);background:transparent}
+.status.saved{border-color:transparent;color:var(--lime-ink);background:var(--lime)}
+.status.readonly{border-style:dashed}
+.icon-btn.on{background:var(--lime);color:var(--lime-ink);border-color:transparent}
+
+/* In edit mode the stage becomes a two pane, fixed height workspace. */
+body.editing #stage{
+  display:flex;align-items:stretch;gap:0;
+  height:calc(100vh - 55px);overflow:hidden;
+}
+body.editing .page-foot{display:none}
+body.editing article{
+  flex:1;min-width:0;max-width:none;margin:0;
+  padding:28px 30px 60px;overflow-y:auto;
+}
+
+.editor-pane{
+  flex:1;min-width:0;display:flex;flex-direction:column;
+  border-right:1px solid var(--rule);background:var(--surface);
+}
+.editor-bar{
+  display:flex;align-items:center;gap:8px;padding:8px 14px;
+  font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--rule);
+  letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+}
+.editor-bar .grow{flex:1}
+.editor-bar button{
+  font-size:12.5px;letter-spacing:0;text-transform:none;font-weight:500;
+  padding:4px 10px;border-radius:6px;border:1px solid var(--rule);color:var(--ink);
+}
+.editor-bar button:hover{border-color:var(--ink)}
+.sync-toggle{display:flex;align-items:center;gap:6px;letter-spacing:0;text-transform:none;font-weight:500;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.sync-toggle input{accent-color:var(--lime);margin:0}
+
+/* formatting toolbar */
+.md-toolbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:2px;padding:6px 10px;border-bottom:1px solid var(--rule);
+  position:relative;background:var(--surface);
+}
+/* on a phone the quick H1 to H3 buttons give way; the Heading menu has them all */
+@media (max-width:640px){ .tb.hq{display:none} .md-toolbar{padding:5px 6px} .sync-toggle .long{display:none} }
+.tb{
+  height:30px;min-width:30px;padding:0 7px;border-radius:6px;border:1px solid transparent;
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:0 0 auto;
+  color:var(--ink);font-size:13px;font-weight:600;line-height:1;
+}
+.tb:hover{border-color:var(--rule);background:var(--paper)}
+.tb:active{background:var(--lime);color:var(--lime-ink)}
+.tb svg{display:block}
+.tb .lbl{font-weight:600;font-size:12.5px}
+.tb-sep{width:1px;height:18px;background:var(--rule);margin:0 5px;flex:0 0 1px}
+.tb-menu{
+  position:fixed;z-index:70;min-width:190px;padding:6px;border-radius:10px;
+  background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
+}
+.tb-menu button{
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;width:100%;
+  text-align:left;padding:7px 10px;border-radius:6px;color:var(--ink);
+}
+.tb-menu button:hover,.tb-menu button:focus{background:var(--panel);outline:none}
+.tb-menu button.cur{box-shadow:inset 3px 0 0 var(--lime)}
+.tb-menu kbd{font-size:10px;color:var(--muted)}
+.tb-menu .m0{font-size:14px}
+.tb-menu .m1{font-size:22px;font-weight:700}
+.tb-menu .m2{font-size:19px;font-weight:600}
+.tb-menu .m3{font-size:17px;font-weight:600}
+.tb-menu .m4{font-size:15px;font-weight:600}
+.tb-menu .m5{font-size:14px;font-weight:600}
+.tb-menu .m6{font-size:13px;font-weight:600;color:var(--muted)}
+
+/* The textarea sits on a mirror of its own text. The mirror paints the
+   range selected in the preview, which a textarea cannot do by itself. */
+.editor-wrap{position:relative;flex:1;min-height:0}
+.editor,.editor-mirror{
+  font-family:var(--mono);font-size:13.5px;line-height:1.75;padding:16px 14px 60px;
+  tab-size:2;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;
+  letter-spacing:normal;word-spacing:normal;
+}
+.editor{
+  position:absolute;inset:0;width:100%;height:100%;resize:none;border:0;outline:none;
+  background:transparent;color:var(--ink);z-index:1;caret-color:var(--ink);
+}
+.editor::selection{background:color-mix(in srgb,var(--lime) 70%,transparent);color:var(--lime-ink)}
+.editor-mirror{
+  position:absolute;left:0;top:0;margin:0;overflow:hidden;color:transparent;
+  pointer-events:none;user-select:none;z-index:0;
+}
+.editor-mirror mark{background:var(--sync);color:transparent;border-radius:2px;box-shadow:0 0 0 1px var(--sync)}
+.editor-mirror mark.soft{background:var(--sync-soft);box-shadow:none}
+
+/* the matching text in the preview */
+::highlight(md-sync){background-color:var(--sync);color:var(--lime-ink)}
+article ::selection{background:var(--ink);color:var(--paper)}
+article [data-b].sync-block{border-radius:4px;box-shadow:-14px 0 0 -10px var(--lime)}
+article .sync-flash{animation:syncflash 1.1s ease-out}
+@keyframes syncflash{from{background:var(--sync-soft)}to{background:transparent}}
+
+/* narrow screens show one pane at a time */
+.pane-tabs{display:none;gap:6px}
+.pane-tabs button{padding:4px 10px;border-radius:6px;border:1px solid var(--rule);color:var(--muted);font-size:12.5px}
+.pane-tabs button.on{background:var(--ink);color:var(--paper);border-color:transparent}
+@media (max-width:1000px){
+  body.editing .pane-tabs:not([hidden]){display:flex}
+  body.editing .editor-pane{border-right:0}
+  body.editing.show-preview .editor-pane{display:none}
+  body.editing:not(.show-preview) article{display:none}
+  /* the toolbar is tight on a phone, so editing drops what it can spare */
+  body.editing #prevBtn,body.editing #nextBtn,body.editing #printBtn,body.editing #themeBtn,body.editing #div1{display:none}
+  body.editing .status{font-size:10px;padding:3px 7px}
+}
+.hljs-comment,.hljs-quote{color:#7F786F;font-style:italic}
+.hljs-keyword,.hljs-selector-tag,.hljs-literal,.hljs-type{color:#8A2F6E}
+.hljs-string,.hljs-attr,.hljs-regexp,.hljs-addition{color:#3D6B12}
+.hljs-number,.hljs-symbol,.hljs-bullet{color:#A4520E}
+.hljs-title,.hljs-name,.hljs-section,.hljs-built_in{color:#1F5A96}
+.hljs-variable,.hljs-template-variable,.hljs-attribute{color:#7D5800}
+.hljs-meta,.hljs-deletion{color:#A03030}
+:root[data-theme="dark"] .hljs-comment,:root[data-theme="dark"] .hljs-quote{color:#8E867B}
+:root[data-theme="dark"] .hljs-keyword,:root[data-theme="dark"] .hljs-selector-tag,:root[data-theme="dark"] .hljs-literal,:root[data-theme="dark"] .hljs-type{color:#F2A7D8}
+:root[data-theme="dark"] .hljs-string,:root[data-theme="dark"] .hljs-attr,:root[data-theme="dark"] .hljs-regexp,:root[data-theme="dark"] .hljs-addition{color:#C8FF00}
+:root[data-theme="dark"] .hljs-number,:root[data-theme="dark"] .hljs-symbol,:root[data-theme="dark"] .hljs-bullet{color:#FFB870}
+:root[data-theme="dark"] .hljs-title,:root[data-theme="dark"] .hljs-name,:root[data-theme="dark"] .hljs-section,:root[data-theme="dark"] .hljs-built_in{color:#8CC8FF}
+:root[data-theme="dark"] .hljs-variable,:root[data-theme="dark"] .hljs-template-variable,:root[data-theme="dark"] .hljs-attribute{color:#F5D27A}
+:root[data-theme="dark"] .hljs-meta,:root[data-theme="dark"] .hljs-deletion{color:#FF8A80}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .hljs-comment,:root:not([data-theme="light"]) .hljs-quote{color:#8E867B}
+  :root:not([data-theme="light"]) .hljs-keyword,:root:not([data-theme="light"]) .hljs-selector-tag,:root:not([data-theme="light"]) .hljs-literal,:root:not([data-theme="light"]) .hljs-type{color:#F2A7D8}
+  :root:not([data-theme="light"]) .hljs-string,:root:not([data-theme="light"]) .hljs-attr,:root:not([data-theme="light"]) .hljs-regexp,:root:not([data-theme="light"]) .hljs-addition{color:#C8FF00}
+  :root:not([data-theme="light"]) .hljs-number,:root:not([data-theme="light"]) .hljs-symbol,:root:not([data-theme="light"]) .hljs-bullet{color:#FFB870}
+  :root:not([data-theme="light"]) .hljs-title,:root:not([data-theme="light"]) .hljs-name,:root:not([data-theme="light"]) .hljs-section,:root:not([data-theme="light"]) .hljs-built_in{color:#8CC8FF}
+  :root:not([data-theme="light"]) .hljs-variable,:root:not([data-theme="light"]) .hljs-template-variable,:root:not([data-theme="light"]) .hljs-attribute{color:#F5D27A}
+  :root:not([data-theme="light"]) .hljs-meta,:root:not([data-theme="light"]) .hljs-deletion{color:#FF8A80}
+}
+
+/* empty state */
+.empty{max-width:600px;margin:0 auto;padding:76px 26px 40px}
+.empty .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:14px}
+.empty h1{font-family:var(--ui);font-size:32px;font-weight:700;letter-spacing:-.015em;margin:0 0 10px;line-height:1.18}
+.empty h1 em{font-style:normal;background:linear-gradient(100deg,transparent 0 2px,var(--lime) 2px 97%,transparent 97%);background-size:100% 42%;background-repeat:no-repeat;background-position:0 88%}
+.empty p.lede{color:var(--muted);margin:0 0 26px;font-size:16px;line-height:1.6}
+
+/* resume card */
+.resume{
+  display:flex;align-items:center;gap:14px;padding:13px 16px;margin-bottom:18px;
+  border:1px solid var(--rule);border-left:3px solid var(--lime);border-radius:10px;background:var(--panel);
+}
+.resume .r-body{flex:1;min-width:0}
+.resume .r-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.resume .r-name{font-weight:600;font-size:15px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resume .r-meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+.drop{border:1.5px dashed var(--rule);border-radius:12px;padding:34px 24px;text-align:center;transition:border-color .15s,background .15s;background:var(--surface)}
+.drop:hover{border-color:var(--muted)}
+.drop strong{display:block;font-family:var(--ui);font-weight:600;margin-bottom:6px;font-size:16px}
+.drop span{color:var(--muted);font-size:14px}
+.url-row{display:flex;gap:8px;margin-top:14px}
+.url-row input{flex:1}
+.empty textarea{
+  width:100%;margin-top:14px;min-height:110px;padding:13px;border-radius:10px;border:1px solid var(--rule);
+  background:var(--surface);color:var(--ink);font-family:var(--mono);font-size:13px;resize:vertical;
+}
+.keys{margin-top:26px;font-size:13px;color:var(--muted);line-height:2.1}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);background:var(--panel);padding:2px 6px;border-radius:4px}
+body.dragging .drop{border-color:var(--ink);background:color-mix(in srgb,var(--lime) 18%,transparent)}
+#dropveil{
+  position:fixed;inset:0;z-index:80;display:none;place-items:center;
+  background:color-mix(in srgb,var(--paper) 78%,transparent);backdrop-filter:blur(3px);
+  font-weight:600;
+}
+body.dragging #dropveil{display:grid}
+#dropveil div{border:2px dashed var(--ink);border-radius:14px;padding:28px 44px;background:var(--lime);color:var(--lime-ink)}
+
+.page-foot{
+  max-width:760px;margin:0 auto;padding:26px 26px 60px;border-top:1px solid var(--rule);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);
+}
+.page-foot img{height:24px;width:auto}
+.page-foot .sep{width:1px;height:16px;background:var(--rule)}
+.page-foot a{color:var(--ink);text-decoration:none;font-weight:500;border-bottom:2px solid var(--ink);padding-bottom:1px}
+.page-foot a:hover{background:var(--lime);color:var(--lime-ink)}
+.page-foot .right{margin-left:auto;font-size:12.5px}
+
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--brand-charcoal);color:var(--brand-cream);padding:9px 16px;border-radius:8px;font-size:13.5px;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:90;max-width:90vw;text-align:center;
+  box-shadow:inset 3px 0 0 var(--brand-lime);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Small screens: tighten the toolbar before anything gets pushed off the edge. */
+@media (max-width:640px){
+  .topbar{padding:10px 14px;gap:8px}
+  .pane-tabs button{padding:4px 9px;font-size:11.5px}
+}
+@media (max-width:430px){
+  .topbar{padding:10px 10px;gap:6px}
+  .topbar .icon-btn{flex:0 0 30px;width:30px;height:30px}
+  .pane-tabs button{padding:4px 8px;font-size:11px}
+  /* the save state becomes a dot, with the wording kept in its tooltip */
+  body.editing .status{
+    width:11px;height:11px;padding:0;border-radius:50%;border-width:2px;
+    font-size:0;overflow:hidden;flex:0 0 11px;
+  }
+}
+
+@media (max-width:760px){ .app-name span{display:none} }
+@media (max-width:860px){
+  /* the hamburger occupies the slot the app name pulls into on desktop */
+  .app-name{margin-left:0}
+  .rail{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .2s}
+  body.rail-open .rail{transform:none;box-shadow:var(--shadow)}
+  #menuBtn{display:grid}
+  .crumb,.meta{display:none}
+  article{padding:34px 20px 30px;font-size:16.5px}
+  .empty{padding:44px 20px 30px}
+  .page-foot{padding:22px 20px 50px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  .rail,.topbar,#progress,.copy,.toast,.url-row{display:none!important}
+  body{background:#fff;color:#000}
+  article{max-width:none;padding:0;font-size:11.5pt;color:#000}
+  article a{color:#000}
+  article pre{box-shadow:none;background:#f6f6f6}
+  article h2{break-after:avoid}
+  article pre,article table,article blockquote{break-inside:avoid}
+  .page-foot{max-width:none;padding:12pt 0 0;font-size:9pt;color:#555}
+  .page-foot a{border:0;color:#000}
+  .logo-dark{display:none !important}
+  .logo-light{display:inline-block !important}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="dropveil"><div>Drop markdown files to open</div></div>
+
+<div class="rail-veil" id="railVeil"></div>
+
+<div class="app">
+  <aside class="rail" id="rail">
+    <div class="rail-head">
+      <a class="brand" href="https://markdown.old.digitum.marketing" target="_blank" rel="noopener" title="old.digitum.marketing">
+        <img class="logo-light" src="brand/logo-charcoal.png" alt="Digitum" width="640" height="207">
+        <img class="logo-dark" src="brand/logo-lime-cream.png" alt="Digitum" width="640" height="205">
+      </a>
+      <div class="rail-actions">
+        <button class="btn primary" id="openFiles">Open files</button>
+        <button class="btn" id="openFolder">Open folder</button>
+        <button class="btn install" id="installBtn" hidden>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12v1.5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5V12"/></svg>
+          <span id="installLabel">Install app</span>
+        </button>
+      </div>
+    </div>
+    <div class="search"><input id="search" type="search" placeholder="Search in document" autocomplete="off"></div>
+    <div class="rail-scroll">
+      <div id="fileWrap" hidden>
+        <div class="section-label">Open now <span id="fileCount"></span><button class="mini" id="closeAll" hidden>Close all</button></div>
+        <div id="fileList"></div>
+      </div>
+      <div id="tocWrap" hidden>
+        <div class="section-label">Outline</div>
+        <nav class="toc" id="toc"></nav>
+      </div>
+      <div id="recentWrap" hidden>
+        <div class="section-label">Recent <button class="mini" id="clearRecents">Clear</button></div>
+        <div id="recentList"></div>
+        <div class="store-note">Saved on this device only, never uploaded.</div>
+      </div>
+    </div>
+    <div class="rail-foot">
+      <span>Digitum Marketing</span>
+      <a href="https://old.digitum.marketing" target="_blank" rel="noopener">old.digitum.marketing</a>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <button class="icon-btn" id="menuBtn" title="Show files" aria-label="Show files">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+      </button>
+      <button class="app-name" id="homeBtn" title="Back to start" aria-label="Back to start">
+        <img class="logo-light" src="brand/mark-charcoal.png" alt="" width="17" height="23">
+        <img class="logo-dark" src="brand/mark-lime.png" alt="" width="17" height="23">
+        <span>Digitum Markdown Viewer</span>
+      </button>
+      <span class="divider" id="div1" hidden></span>
+      <span class="crumb" id="crumb"></span>
+      <span class="meta" id="meta"></span>
+      <span class="status" id="status" hidden></span>
+      <span class="pane-tabs" id="paneTabs" hidden>
+        <button id="tabEdit" class="on">Edit</button>
+        <button id="tabPreview">Preview</button>
+      </span>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="editBtn" title="Edit this file" aria-label="Edit this file" hidden>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.2 2.6l2.2 2.2M9.9 3.9l2.2 2.2-7 7-2.9.7.7-2.9 7-7z"/></svg>
+      </button>
+      <button class="icon-btn" id="closeBtn" title="Close this file" aria-label="Close this file" hidden>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+      <button class="icon-btn" id="prevBtn" title="Previous file" aria-label="Previous file">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3L5 8l5 5"/></svg>
+      </button>
+      <button class="icon-btn" id="nextBtn" title="Next file" aria-label="Next file">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3l5 5-5 5"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" title="Switch light or dark" aria-label="Switch light or dark theme">
+        <svg class="sun" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3"/></svg>
+        <svg class="moon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1z"/></svg>
+      </button>
+      <button class="icon-btn" id="printBtn" title="Print or save as PDF" aria-label="Print">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 6V2h7v4M4.5 12H3V7h10v5h-1.5M4.5 10h7v4h-7z"/></svg>
+      </button>
+    </div>
+
+    <div id="stage">
+      <div class="empty" id="empty">
+        <div class="eyebrow">Markdown Viewer</div>
+        <h1>Read any markdown file the way it was <em>meant to look</em></h1>
+        <p class="lede">Drop a .md file and get clean typography, an outline, search and a print ready layout. Edit with a formatting toolbar, see every selection mirrored between source and preview, and save straight back to the file. Nothing leaves your browser.</p>
+
+        <div class="resume" id="resume" hidden>
+          <div class="r-body">
+            <div class="r-label">Last session</div>
+            <div class="r-name" id="resumeName"></div>
+            <div class="r-meta" id="resumeMeta"></div>
+          </div>
+          <button class="btn primary" id="resumeBtn">Reopen</button>
+        </div>
+
+        <div class="install-cta" id="installCta" hidden>
+          <div class="ic-body">
+            <div class="ic-title" id="installCtaTitle">Use it like an app</div>
+            <div class="ic-sub" id="installCtaSub">Add it to your Home Screen for an icon and a full screen window.</div>
+          </div>
+          <button class="btn primary" id="installCtaBtn">Add to Home Screen</button>
+        </div>
+
+        <div class="drop" id="dropzone">
+          <strong>Drag files or a folder here</strong>
+          <span>or click to browse</span>
+        </div>
+        <div class="url-row">
+          <input id="urlInput" type="url" placeholder="Or paste a link to a raw .md file" autocomplete="off">
+          <button class="btn" id="urlBtn">Load</button>
+        </div>
+        <textarea id="paste" placeholder="Or paste markdown text here to preview it"></textarea>
+        <div class="keys">
+          <kbd>Ctrl</kbd> <kbd>O</kbd> open files &nbsp;&nbsp; <kbd>/</kbd> search &nbsp;&nbsp; <kbd>[</kbd> <kbd>]</kbd> previous or next file &nbsp;&nbsp; <kbd>Ctrl</kbd> <kbd>E</kbd> edit &nbsp;&nbsp; <kbd>Ctrl</kbd> <kbd>B</kbd> <kbd>I</kbd> <kbd>K</kbd> bold, italic, link &nbsp;&nbsp; <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>1</kbd>–<kbd>6</kbd> heading &nbsp;&nbsp; <kbd>Ctrl</kbd> <kbd>S</kbd> save &nbsp;&nbsp; <kbd>Esc</kbd> back &nbsp;&nbsp; <kbd>Ctrl</kbd> <kbd>P</kbd> save as PDF
+        </div>
+      </div>
+      <div class="editor-pane" id="editorPane" hidden>
+        <div class="editor-bar">
+          <span>Markdown source</span>
+          <span class="grow"></span>
+          <label class="sync-toggle" title="Selecting text on one side highlights the same text on the other"><input type="checkbox" id="syncToggle" checked><span>Sync<span class="long"> selection</span></span></label>
+          <button id="saveCopyBtn">Save a copy</button>
+        </div>
+        <div class="md-toolbar" id="mdToolbar" role="toolbar" aria-label="Formatting">
+          <button class="tb" data-cmd="undo" title="Undo (Ctrl Z)" aria-label="Undo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5.5 4L2.5 7l3 3"/><path d="M2.5 7h7a4 4 0 0 1 0 8H7"/></svg></button>
+          <button class="tb" data-cmd="redo" title="Redo (Ctrl Shift Z)" aria-label="Redo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10.5 4l3 3-3 3"/><path d="M13.5 7h-7a4 4 0 0 0 0 8H9"/></svg></button>
+          <span class="tb-sep"></span>
+          <button class="tb" id="headingBtn" data-cmd="headingMenu" title="Heading level (Ctrl Alt 0 to 6)" aria-label="Heading level" aria-haspopup="true" aria-expanded="false"><span class="lbl">Heading</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5l3 3 3-3"/></svg></button>
+          <button class="tb hq" data-cmd="h1" title="Heading 1 (Ctrl Alt 1)" aria-label="Heading 1"><span class="lbl">H1</span></button>
+          <button class="tb hq" data-cmd="h2" title="Heading 2 (Ctrl Alt 2)" aria-label="Heading 2"><span class="lbl">H2</span></button>
+          <button class="tb hq" data-cmd="h3" title="Heading 3 (Ctrl Alt 3)" aria-label="Heading 3"><span class="lbl">H3</span></button>
+          <span class="tb-sep"></span>
+          <button class="tb" data-cmd="bold" title="Bold (Ctrl B)" aria-label="Bold"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 2.5h4.2a2.8 2.8 0 0 1 0 5.6H4.5zM4.5 8.1h5a2.8 2.8 0 0 1 0 5.6h-5z"/></svg></button>
+          <button class="tb" data-cmd="italic" title="Italic (Ctrl I)" aria-label="Italic"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6.5 2.5h6M3.5 13.5h6M9.5 2.5l-3 11"/></svg></button>
+          <button class="tb" data-cmd="strike" title="Strikethrough (Ctrl Shift S)" aria-label="Strikethrough"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 8h12M11.5 4.5C11 3.3 9.8 2.5 8 2.5c-2 0-3.5 1-3.5 2.6 0 .9.4 1.5 1.1 1.9M4.5 11.3c.5 1.3 1.8 2.2 3.7 2.2 2.1 0 3.6-1 3.6-2.7 0-.6-.2-1.1-.5-1.5"/></svg></button>
+          <button class="tb" data-cmd="code" title="Inline code (Ctrl Shift C)" aria-label="Inline code"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5.5 4L1.5 8l4 4M10.5 4l4 4-4 4"/></svg></button>
+          <button class="tb" data-cmd="link" title="Link (Ctrl K)" aria-label="Link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1M9.2 6.8a3 3 0 0 0-4.2 0L2.7 9.1a3 3 0 0 0 4.2 4.2l1-1"/></svg></button>
+          <button class="tb" data-cmd="image" title="Image" aria-label="Image"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><circle cx="5.8" cy="6.2" r="1.2"/><path d="M2.5 12l3.8-3.6 2.6 2.4 2-1.8 2.6 2.4"/></svg></button>
+          <span class="tb-sep"></span>
+          <button class="tb" data-cmd="ul" title="Bulleted list (Ctrl Shift 8)" aria-label="Bulleted list"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h8M6 8h8M6 12h8"/><circle cx="2.6" cy="4" r=".9" fill="currentColor"/><circle cx="2.6" cy="8" r=".9" fill="currentColor"/><circle cx="2.6" cy="12" r=".9" fill="currentColor"/></svg></button>
+          <button class="tb" data-cmd="ol" title="Numbered list (Ctrl Shift 7)" aria-label="Numbered list"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 4h7.5M6.5 8h7.5M6.5 12h7.5"/><path d="M1.8 2.6h1.1v3M1.6 5.6h2.3M1.7 9.7c.3-.6 2.1-.6 2.1.3 0 .8-2.2 1.2-2.2 2.1h2.3" stroke-width="1.1"/></svg></button>
+          <button class="tb" data-cmd="task" title="Checklist (Ctrl Shift 9)" aria-label="Checklist"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.8" y="2.3" width="4" height="4" rx=".8"/><path d="M2.6 4.3l.9.9 1.6-1.7" stroke-width="1.2"/><rect x="1.8" y="9.7" width="4" height="4" rx=".8"/><path d="M8 4.3h6M8 11.7h6"/></svg></button>
+          <button class="tb" data-cmd="quote" title="Quote (Ctrl Shift .)" aria-label="Quote"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3v10M6 4.5h7.5M6 8h7.5M6 11.5h5"/></svg></button>
+          <button class="tb" data-cmd="codeblock" title="Code block" aria-label="Code block"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M6 6.3L4.2 8 6 9.7M10 6.3L11.8 8 10 9.7"/></svg></button>
+          <button class="tb" data-cmd="table" title="Table" aria-label="Table"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M1.5 6.2h13M1.5 9.8h13M6.2 2.5v11"/></svg></button>
+          <button class="tb" data-cmd="hr" title="Divider" aria-label="Divider"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 8h13"/><path d="M4 4.5h8M4 11.5h8" stroke-width="1" opacity=".5"/></svg></button>
+        </div>
+        <div class="tb-menu" id="headingMenu" role="menu" aria-label="Heading level" hidden>
+          <button role="menuitem" data-level="0"><span class="m0">Normal text</span><kbd>Ctrl Alt 0</kbd></button>
+          <button role="menuitem" data-level="1"><span class="m1">Heading 1</span><kbd>Ctrl Alt 1</kbd></button>
+          <button role="menuitem" data-level="2"><span class="m2">Heading 2</span><kbd>Ctrl Alt 2</kbd></button>
+          <button role="menuitem" data-level="3"><span class="m3">Heading 3</span><kbd>Ctrl Alt 3</kbd></button>
+          <button role="menuitem" data-level="4"><span class="m4">Heading 4</span><kbd>Ctrl Alt 4</kbd></button>
+          <button role="menuitem" data-level="5"><span class="m5">Heading 5</span><kbd>Ctrl Alt 5</kbd></button>
+          <button role="menuitem" data-level="6"><span class="m6">Heading 6</span><kbd>Ctrl Alt 6</kbd></button>
+        </div>
+        <div class="editor-wrap">
+          <div class="editor-mirror" id="editorMirror" aria-hidden="true"></div>
+          <textarea class="editor" id="editor" spellcheck="false" autocomplete="off"
+                    autocapitalize="off" autocorrect="off" wrap="soft"
+                    aria-label="Markdown source"></textarea>
+        </div>
+      </div>
+      <article id="doc" hidden></article>
+      <footer class="page-foot">
+        <a class="brand" href="https://markdown.old.digitum.marketing" target="_blank" rel="noopener" style="border:0;padding:0">
+          <img class="logo-light" src="brand/logo-charcoal.png" alt="Digitum" width="640" height="207">
+          <img class="logo-dark" src="brand/logo-lime-cream.png" alt="Digitum" width="640" height="205">
+        </a>
+        <span class="sep"></span>
+        <span>A free tool by <a href="https://old.digitum.marketing" target="_blank" rel="noopener">old.digitum.marketing</a></span>
+        <span class="right">SEO, web development and lead generation</span>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="filePicker" accept=".md,.markdown,.mdx,.txt,.mkd,text/markdown" multiple hidden>
+<input type="file" id="folderPicker" webkitdirectory directory multiple hidden>
+<div class="toast" id="toast"></div>
+
+<div class="sheet-veil" id="installHelp" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="installHelpTitle">
+    <h2 id="installHelpTitle">Install this viewer</h2>
+    <p class="sub" id="installHelpSub"></p>
+    <ol id="installHelpSteps"></ol>
+    <div class="checks" id="installChecks" hidden></div>
+    <p class="fine" id="installHelpFine"></p>
+    <button class="btn primary" id="installHelpClose">Got it</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+var MD_EXT = /\.(md|markdown|mdx|mkd|txt)$/i;
+var IMG_EXT = /\.(png|jpe?g|gif|svg|webp|avif|bmp)$/i;
+var BASE_TITLE = "Digitum Markdown Viewer";
+var CACHE_LIMIT = 2 * 1024 * 1024;   /* biggest doc kept as a snapshot */
+var MAX_RECENTS = 12;
+var HAS_FSA = !!(window.showOpenFilePicker);
+
+var state = { files: [], active: -1, images: {}, query: "", editing: false,
+              blocks: [], blockGen: 0, renderedText: "" };
+var $ = function(id){ return document.getElementById(id); };
+var doc = $("doc"), empty = $("empty"), toc = $("toc"), tocWrap = $("tocWrap"),
+    fileList = $("fileList"), fileWrap = $("fileWrap"), crumb = $("crumb"), meta = $("meta"),
+    recentWrap = $("recentWrap"), recentList = $("recentList");
+
+/* ================= storage ================= */
+/* IndexedDB keeps a short history: a real file handle where the browser
+   supports it, otherwise a snapshot of the text. Everything degrades to
+   a normal viewer if storage is unavailable (private mode, sandboxed frame). */
+
+var Store = (function(){
+  var dbp = null, ok = true;
+
+  function db(){
+    if(dbp) return dbp;
+    dbp = new Promise(function(res, rej){
+      var req;
+      try{ req = indexedDB.open("digitum-md-viewer", 1); }
+      catch(e){ return rej(e); }
+      req.onupgradeneeded = function(){
+        var d = req.result;
+        if(!d.objectStoreNames.contains("recents")) d.createObjectStore("recents", { keyPath:"id" });
+      };
+      req.onsuccess = function(){ res(req.result); };
+      req.onerror = function(){ rej(req.error); };
+      req.onblocked = function(){ rej(new Error("blocked")); };
+      setTimeout(function(){ rej(new Error("timeout")); }, 3000);
+    }).catch(function(e){ ok = false; throw e; });
+    return dbp;
+  }
+
+  function run(store, mode, fn){
+    if(!ok) return Promise.reject(new Error("storage off"));
+    return db().then(function(d){
+      return new Promise(function(res, rej){
+        var t, s, r;
+        try{ t = d.transaction(store, mode); s = t.objectStore(store); r = fn(s); }
+        catch(e){ return rej(e); }
+        t.oncomplete = function(){ res(r ? r.result : undefined); };
+        t.onerror = function(){ rej(t.error); };
+        t.onabort = function(){ rej(t.error || new Error("aborted")); };
+      });
+    });
+  }
+
+  return {
+    available: function(){ return ok; },
+    put: function(rec){ return run("recents","readwrite",function(s){ return s.put(rec); }); },
+    del: function(id){ return run("recents","readwrite",function(s){ return s.delete(id); }); },
+    clear: function(){ return run("recents","readwrite",function(s){ return s.clear(); }); },
+    all: function(){
+      return run("recents","readonly",function(s){ return s.getAll(); }).then(function(list){
+        list = list || [];
+        list.sort(function(a,b){ return b.openedAt - a.openedAt; });
+        return list;
+      });
+    }
+
+  };
+})();
+
+function quiet(){ /* storage failures never break the viewer */ }
+
+/* ================= markdown ================= */
+
+function fallbackParse(src){
+  var out = [], lines = src.replace(/\r\n?/g,"\n").split("\n"), i = 0;
+  function inline(t){
+    return t
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/`([^`]+)`/g,"<code>$1</code>")
+      .replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g,'<img alt="$1" src="$2">')
+      .replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g,'<a href="$2">$1</a>')
+      .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g,"<em>$1</em>");
+  }
+  while(i < lines.length){
+    var l = lines[i];
+    if(/^```/.test(l)){
+      var buf = []; i++;
+      while(i < lines.length && !/^```/.test(lines[i])){ buf.push(lines[i]); i++; }
+      i++;
+      out.push("<pre><code>" + buf.join("\n").replace(/&/g,"&amp;").replace(/</g,"&lt;") + "</code></pre>");
+      continue;
+    }
+    var h = l.match(/^(#{1,6})\s+(.*)$/);
+    if(h){ out.push("<h"+h[1].length+">"+inline(h[2])+"</h"+h[1].length+">"); i++; continue; }
+    if(l.trim() && l.replace(/[\s\-*_]/g,"") === "" && l.replace(/\s/g,"").length > 2){ out.push("<hr>"); i++; continue; }
+    if(/^\s*([-*+]|\d+\.)\s+/.test(l)){
+      var ordered = /^\s*\d+\./.test(l), items = [];
+      while(i < lines.length && /^\s*([-*+]|\d+\.)\s+/.test(lines[i])){
+        items.push("<li>" + inline(lines[i].replace(/^\s*([-*+]|\d+\.)\s+/,"")) + "</li>"); i++;
+      }
+      out.push((ordered?"<ol>":"<ul>") + items.join("") + (ordered?"</ol>":"</ul>"));
+      continue;
+    }
+    if(/^\s*>/.test(l)){
+      var q = [];
+      while(i < lines.length && /^\s*>/.test(lines[i])){ q.push(inline(lines[i].replace(/^\s*>\s?/,""))); i++; }
+      out.push("<blockquote><p>" + q.join(" ") + "</p></blockquote>");
+      continue;
+    }
+    if(!l.trim()){ i++; continue; }
+    var para = [];
+    while(i < lines.length && lines[i].trim() && !/^(#{1,6}\s|```|\s*>|\s*([-*+]|\d+\.)\s)/.test(lines[i])){
+      para.push(lines[i]); i++;
+    }
+    out.push("<p>" + inline(para.join(" ")) + "</p>");
+  }
+  return out.join("\n");
+}
+
+function toHTML(src){
+  if(window.marked && window.marked.parse){
+    try{ return window.marked.parse(src, { gfm:true, breaks:false, headerIds:false, mangle:false }); }
+    catch(e){}
+  }
+  return fallbackParse(src);
+}
+
+/* Renders the document block by block so every top level element in the
+   preview knows which characters of the source produced it. Each element
+   gets data-b (its block number) and state.blocks[n] holds { s, e, cs }:
+   start and end offsets in the source, and where its visible text starts
+   (after a code fence line). Selection sync between the panes reads this. */
+function paintHTML(src){
+  state.blocks = [];
+  state.blockGen = (state.blockGen || 0) + 1;
+  if(!(window.marked && window.marked.lexer && window.marked.parser)){
+    doc.innerHTML = toHTML(src);
+    return;
+  }
+  var tokens, norm = src.replace(/\r\n?/g, "\n");
+  try{ tokens = window.marked.lexer(norm, { gfm:true, breaks:false }); }
+  catch(e){ doc.innerHTML = toHTML(src); return; }
+
+  /* Offsets refer to the LF-normalised text, which is also exactly what a
+     textarea's value holds, so they line up with the editor. */
+  state.renderedText = norm;
+  var frag = document.createDocumentFragment(), tpl = document.createElement("template");
+  var cursor = 0;
+  for(var i=0;i<tokens.length;i++){
+    var tok = tokens[i], raw = tok.raw || "";
+    var at = raw ? norm.indexOf(raw, cursor) : -1;
+    var s = at > -1 ? at : cursor;
+    var e = Math.min(norm.length, s + raw.length);
+    cursor = e;
+    if(tok.type === "space") continue;
+
+    var list = [tok];
+    list.links = tokens.links;
+    var html;
+    try{ html = window.marked.parser(list, { gfm:true, breaks:false }); }
+    catch(err){ html = ""; }
+    tpl.innerHTML = html;
+
+    var n = state.blocks.length, cs = s;
+    if(tok.type === "code" && tok.codeBlockStyle !== "indented"){
+      var nl = norm.indexOf("\n", s);
+      if(nl > -1 && nl < e) cs = nl + 1;
+    }
+    state.blocks.push({ s:s, e:e, cs:cs, type:tok.type });
+
+    var kids = Array.prototype.slice.call(tpl.content.childNodes), tagged = false;
+    for(var k=0;k<kids.length;k++){
+      if(kids[k].nodeType === 1){ kids[k].setAttribute("data-b", n); tagged = true; }
+    }
+    if(!tagged && tpl.content.textContent.trim()){
+      var wrap = document.createElement("div");
+      wrap.setAttribute("data-b", n);
+      wrap.appendChild(tpl.content);
+      frag.appendChild(wrap);
+    }else{
+      frag.appendChild(tpl.content);
+    }
+  }
+  doc.innerHTML = "";
+  doc.appendChild(frag);
+}
+
+/* Everything that turns source text into the decorated preview. */
+function paintDoc(text){
+  paintHTML(text);
+  resolveImages();
+  decorateHeadings();
+  decorateTasks();
+  decorateCode();
+  buildTOC();
+  renderMermaid();
+}
+
+function slug(text, used){
+  var s = text.toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/\s+/g,"-").slice(0,60) || "section";
+  var n = 1, base = s;
+  while(used[s]){ s = base + "-" + (++n); }
+  used[s] = true;
+  return s;
+}
+
+/* ================= render ================= */
+
+function render(restoreScroll){
+  var f = state.files[state.active];
+  if(!f) return;
+
+  doc.hidden = false;
+  empty.hidden = true;
+
+  paintDoc(f.text);
+  applySearch();
+
+  $("div1").hidden = false;
+  $("closeBtn").hidden = false;
+  $("editBtn").hidden = false;
+  if(state.editing){
+    editor.value = f.text;
+    refreshStatus();
+    Sync.reset();
+  }
+  crumb.textContent = f.name;
+  document.title = f.name + " — " + BASE_TITLE;
+  var words = (f.text.trim().match(/\S+/g) || []).length;
+  meta.textContent = words.toLocaleString() + " words · " + Math.max(1, Math.round(words/225)) + " min";
+  paintFileList();
+
+  if(restoreScroll && f.scroll > 0.01){
+    var pct = f.scroll;
+    setTimeout(function(){
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo(0, Math.round(h * pct));
+      toast("Back where you left off");
+    }, 140);
+  }else{
+    window.scrollTo(0,0);
+  }
+
+  remember(f);
+}
+
+function resolveImages(){
+  var imgs = doc.querySelectorAll("img");
+  for(var i=0;i<imgs.length;i++){
+    var src = imgs[i].getAttribute("src") || "";
+    if(/^(https?:|data:|blob:|\/\/)/i.test(src)) continue;
+    var key = src.split("/").pop().toLowerCase();
+    if(state.images[key]) imgs[i].src = state.images[key];
+    else imgs[i].style.opacity = ".45";
+  }
+}
+
+function decorateHeadings(){
+  var used = {}, hs = doc.querySelectorAll("h1,h2,h3,h4");
+  for(var i=0;i<hs.length;i++){ if(!hs[i].id) hs[i].id = slug(hs[i].textContent, used); }
+}
+
+function decorateTasks(){
+  var boxes = doc.querySelectorAll("li > input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++){ boxes[i].parentElement.classList.add("task"); boxes[i].disabled = false; }
+}
+
+function decorateCode(){
+  var blocks = doc.querySelectorAll("pre > code");
+  for(var i=0;i<blocks.length;i++){
+    var code = blocks[i];
+    if(/language-mermaid/.test(code.className)) continue;
+    if(window.hljs){ try{ window.hljs.highlightElement(code); }catch(e){} }
+    var btn = document.createElement("button");
+    btn.className = "copy"; btn.type = "button"; btn.textContent = "Copy";
+    (function(c,b){
+      b.addEventListener("click", function(){
+        navigator.clipboard.writeText(c.textContent).then(function(){
+          b.textContent = "Copied";
+          setTimeout(function(){ b.textContent = "Copy"; }, 1400);
+        });
+      });
+    })(code, btn);
+    code.parentElement.appendChild(btn);
+  }
+}
+
+function renderMermaid(){
+  var blocks = doc.querySelectorAll("code.language-mermaid");
+  if(!blocks.length) return;
+  var run = function(){
+    for(var i=0;i<blocks.length;i++){
+      var pre = blocks[i].parentElement;
+      var div = document.createElement("div");
+      div.className = "mermaid";
+      div.textContent = blocks[i].textContent;
+      if(pre.hasAttribute("data-b")) div.setAttribute("data-b", pre.getAttribute("data-b"));
+      pre.replaceWith(div);
+    }
+    state.blockGen++;   /* the sync index pointed at the replaced nodes */
+    try{
+      window.mermaid.initialize({ startOnLoad:false, theme: isDark() ? "dark" : "default" });
+      window.mermaid.run();
+    }catch(e){}
+  };
+  if(window.mermaid) return run();
+  var s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+  s.onload = run;
+  document.head.appendChild(s);
+}
+
+/* ================= outline ================= */
+
+var observer = null;
+
+function buildTOC(){
+  toc.innerHTML = "";
+  var hs = doc.querySelectorAll("h2,h3,h4");
+  if(hs.length < 2){ tocWrap.hidden = true; return; }
+  tocWrap.hidden = false;
+  for(var i=0;i<hs.length;i++){
+    var a = document.createElement("a");
+    a.href = "#" + hs[i].id;
+    a.textContent = hs[i].textContent;
+    a.className = "lvl" + hs[i].tagName.charAt(1);
+    a.dataset.target = hs[i].id;
+    toc.appendChild(a);
+  }
+  if(observer) observer.disconnect();
+  observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      var links = toc.querySelectorAll("a");
+      for(var i=0;i<links.length;i++){
+        links[i].classList.toggle("active", links[i].dataset.target === en.target.id);
+      }
+    });
+  }, { rootMargin:"-72px 0px -70% 0px", threshold:0 });
+  for(var j=0;j<hs.length;j++) observer.observe(hs[j]);
+}
+
+/* ================= search ================= */
+
+function applySearch(){
+  var q = state.query.trim();
+  if(!q) return;
+  var rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "gi");
+  var walker = document.createTreeWalker(doc, NodeFilter.SHOW_TEXT, {
+    acceptNode: function(n){
+      if(!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      if(n.parentElement.closest("pre, code, .copy")) return NodeFilter.FILTER_REJECT;
+      return rx.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  var nodes = [], n;
+  while((n = walker.nextNode())) nodes.push(n);
+  var hits = 0;
+  nodes.forEach(function(node){
+    var frag = document.createDocumentFragment(), last = 0, m;
+    rx.lastIndex = 0;
+    while((m = rx.exec(node.nodeValue))){
+      frag.appendChild(document.createTextNode(node.nodeValue.slice(last, m.index)));
+      var mark = document.createElement("mark");
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      last = m.index + m[0].length;
+      hits++;
+    }
+    frag.appendChild(document.createTextNode(node.nodeValue.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+  if(hits){
+    var first = doc.querySelector("mark");
+    if(first) first.scrollIntoView({ block:"center", behavior:"smooth" });
+  }
+  toast(hits ? hits + " match" + (hits>1?"es":"") : "No matches for " + q);
+}
+
+/* ================= opening documents ================= */
+
+function readText(file){
+  if(file.text) return file.text();
+  return new Promise(function(res, rej){
+    var r = new FileReader();
+    r.onload = function(){ res(String(r.result)); };
+    r.onerror = function(){ rej(r.error); };
+    r.readAsText(file);
+  });
+}
+
+function fileId(file){
+  return "f:" + file.name + ":" + file.size + ":" + (file.lastModified || 0);
+}
+
+/* items: [{ file, handle, dir }] */
+function openItems(items, opts){
+  opts = opts || {};
+  var mds = [], imgs = [];
+  items.forEach(function(it){
+    if(MD_EXT.test(it.file.name)) mds.push(it);
+    else if(IMG_EXT.test(it.file.name)) imgs.push(it);
+  });
+  imgs.forEach(function(it){ state.images[it.file.name.toLowerCase()] = URL.createObjectURL(it.file); });
+
+  if(!mds.length){ toast("No markdown files in that selection"); return Promise.resolve(); }
+  mds.sort(function(a,b){ return ((a.dir||"")+a.file.name).localeCompare((b.dir||"")+b.file.name); });
+
+  var start = state.files.length;
+  return Promise.all(mds.map(function(it){
+    return readText(it.file).then(function(text){
+      return {
+        id: fileId(it.file),
+        name: it.file.name,
+        dir: it.dir || "",
+        text: text,
+        size: it.file.size,
+        handle: it.handle || null,
+        source: it.handle ? "file" : "upload",
+        diskModified: it.file.lastModified || 0,
+        dirty: false,
+        scroll: 0
+      };
+    });
+  })).then(function(docs){
+    state.files = state.files.concat(docs);
+    state.active = opts.focusId
+      ? Math.max(start, indexOfId(opts.focusId))
+      : start;
+    paintFileList();
+    render(!!opts.restoreScroll);
+    if(opts.dirRecord) rememberDir(opts.dirRecord);
+  }).catch(function(err){
+    toast("Could not read that file. " + (err && err.message ? err.message : ""));
+  });
+}
+
+function indexOfId(id){
+  for(var i=0;i<state.files.length;i++){ if(state.files[i].id === id) return i; }
+  return 0;
+}
+
+function openText(name, text, id){
+  var rec = { id: id || ("t:" + name), name:name, dir:"", text:text, size:text.length, handle:null, source:"text", scroll:0 };
+  var at = indexOfIdStrict(rec.id);
+  if(at > -1){ state.files[at] = rec; state.active = at; }
+  else { state.files.push(rec); state.active = state.files.length - 1; }
+  paintFileList();
+  render(false);
+}
+
+function indexOfIdStrict(id){
+  for(var i=0;i<state.files.length;i++){ if(state.files[i].id === id) return i; }
+  return -1;
+}
+
+function loadURL(url, restoreScroll, scroll){
+  if(!/^https?:\/\//i.test(url) && url.charAt(0) !== "/"){ url = "https://" + url; }
+  toast("Loading");
+  return fetch(url).then(function(r){
+    if(!r.ok) throw new Error(r.status + " " + r.statusText);
+    return r.text();
+  }).then(function(text){
+    var name = decodeURIComponent(url.split("/").pop().split("?")[0]) || "document.md";
+    var rec = { id:"u:"+url, name:name, dir:"", text:text, size:text.length, handle:null,
+                source:"url", url:url, scroll: scroll || 0 };
+    var at = indexOfIdStrict(rec.id);
+    if(at > -1){ state.files[at] = rec; state.active = at; }
+    else { state.files.push(rec); state.active = state.files.length - 1; }
+    paintFileList();
+    render(!!restoreScroll);
+  }).catch(function(err){
+    toast("Could not load that link. " + err.message);
+  });
+}
+
+/* pickers */
+
+async function pickFiles(){
+  if(HAS_FSA){
+    try{
+      var handles = await window.showOpenFilePicker({
+        multiple: true,
+        types: [{ description:"Markdown", accept:{ "text/markdown":[".md",".markdown",".mdx",".mkd"], "text/plain":[".txt"] } }]
+      });
+      var items = [];
+      for(var i=0;i<handles.length;i++){
+        items.push({ file: await handles[i].getFile(), handle: handles[i], dir:"" });
+      }
+      return openItems(items);
+    }catch(e){
+      if(e && e.name === "AbortError") return;
+      /* fall through to the classic picker */
+    }
+  }
+  $("filePicker").click();
+}
+
+async function pickFolder(){
+  if(window.showDirectoryPicker){
+    try{
+      var dir = await window.showDirectoryPicker();
+      var items = [];
+      await walkDir(dir, "", items, 0);
+      return openItems(items, { dirRecord: { handle:dir, name:dir.name } });
+    }catch(e){
+      if(e && e.name === "AbortError") return;
+    }
+  }
+  $("folderPicker").click();
+}
+
+async function walkDir(dirHandle, path, out, depth){
+  if(depth > 6 || out.length > 400) return;
+  for await (var entry of dirHandle.values()){
+    if(entry.name.charAt(0) === "." || entry.name === "node_modules") continue;
+    if(entry.kind === "file"){
+      if(!MD_EXT.test(entry.name) && !IMG_EXT.test(entry.name)) continue;
+      try{ out.push({ file: await entry.getFile(), handle: entry, dir: path }); }catch(e){}
+    }else{
+      await walkDir(entry, path ? path + "/" + entry.name : entry.name, out, depth + 1);
+    }
+  }
+}
+
+/* ================= session history ================= */
+
+function remember(f){
+  if(!Store.available() || !f) return;
+  var rec = {
+    id: f.id,
+    name: f.name,
+    dir: f.dir || "",
+    kind: f.source === "url" ? "url" : (f.handle ? "handle" : (f.source === "text" ? "text" : "snapshot")),
+    url: f.url || null,
+    handle: f.handle || null,
+    size: f.size || 0,
+    scroll: f.scroll || 0,
+    openedAt: Date.now(),
+    text: (f.text && f.text.length <= CACHE_LIMIT) ? f.text : null
+  };
+  Store.put(rec).then(trimRecents).then(paintRecents).catch(quiet);
+}
+
+function saveScroll(){
+  var f = state.files[state.active];
+  if(!f || !Store.available() || state.editing) return;
+  var h = document.documentElement.scrollHeight - window.innerHeight;
+  f.scroll = h > 0 ? Math.min(1, window.scrollY / h) : 0;
+  Store.all().then(function(list){
+    for(var i=0;i<list.length;i++){
+      if(list[i].id === f.id){
+        list[i].scroll = f.scroll;
+        list[i].openedAt = Date.now();
+        return Store.put(list[i]);
+      }
+    }
+  }).catch(quiet);
+}
+
+function rememberDir(d){
+  if(!Store.available() || !d || !d.handle) return;
+  Store.put({
+    id: "d:" + d.name,
+    name: d.name,
+    kind: "dir",
+    handle: d.handle,
+    openedAt: Date.now(),
+    scroll: 0
+  }).then(trimRecents).then(paintRecents).catch(quiet);
+}
+
+function trimRecents(){
+  return Store.all().then(function(list){
+    var extra = list.slice(MAX_RECENTS);
+    return Promise.all(extra.map(function(r){ return Store.del(r.id); }));
+  }).catch(quiet);
+}
+
+function ago(ts){
+  var s = Math.floor((Date.now() - ts) / 1000);
+  if(s < 60) return "just now";
+  if(s < 3600) return Math.floor(s/60) + " min ago";
+  if(s < 86400) return Math.floor(s/3600) + "h ago";
+  if(s < 172800) return "yesterday";
+  if(s < 604800) return Math.floor(s/86400) + " days ago";
+  return new Date(ts).toLocaleDateString(undefined, { day:"numeric", month:"short" });
+}
+
+function kindLabel(rec){
+  if(rec.kind === "dir") return "Folder";
+  if(rec.kind === "url") return "Link";
+  if(rec.kind === "handle") return "File on disk";
+  if(rec.kind === "text") return "Pasted text";
+  return "Saved copy";
+}
+
+function paintRecents(){
+  if(!Store.available()){ recentWrap.hidden = true; return; }
+  return Store.all().then(function(list){
+    recentWrap.hidden = list.length === 0;
+    recentList.innerHTML = "";
+    list.forEach(function(rec){
+      var row = document.createElement("div");
+      row.className = "recent";
+
+      var open = document.createElement("button");
+      open.className = "recent-open";
+      open.title = (rec.dir ? rec.dir + "/" : "") + rec.name;
+      var n = document.createElement("span");
+      n.className = "recent-name";
+      n.textContent = rec.name;
+      var m = document.createElement("span");
+      m.className = "recent-meta";
+      m.textContent = kindLabel(rec) + " · " + ago(rec.openedAt);
+      open.appendChild(n); open.appendChild(m);
+      open.addEventListener("click", function(){ reopen(rec); });
+
+      var x = document.createElement("button");
+      x.className = "recent-x";
+      x.title = "Remove from history";
+      x.setAttribute("aria-label", "Remove " + rec.name + " from history");
+      x.textContent = "×";
+      x.addEventListener("click", function(e){
+        e.stopPropagation();
+        Store.del(rec.id).then(paintRecents).catch(quiet);
+      });
+
+      row.appendChild(open);
+      row.appendChild(x);
+      recentList.appendChild(row);
+    });
+    paintResume(list[0]);
+  }).catch(function(){ recentWrap.hidden = true; });
+}
+
+function paintResume(rec){
+  var box = $("resume");
+  if(!rec){ box.hidden = true; return; }
+  box.hidden = false;
+  $("resumeName").textContent = rec.name;
+  $("resumeMeta").textContent = kindLabel(rec) + " · " + ago(rec.openedAt) +
+    (rec.scroll > 0.02 ? " · " + Math.round(rec.scroll * 100) + "% read" : "");
+  $("resumeBtn").onclick = function(){ reopen(rec); };
+}
+
+async function ensureRead(handle){
+  try{
+    var opts = { mode:"read" };
+    if(await handle.queryPermission(opts) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  }catch(e){ return false; }
+}
+
+async function reopen(rec){
+  document.body.classList.remove("rail-open");
+
+  if(rec.kind === "url" && rec.url){ return loadURL(rec.url, true, rec.scroll); }
+
+  if(rec.kind === "dir" && rec.handle){
+    if(!(await ensureRead(rec.handle))){ return toast("Permission needed to reopen that folder"); }
+    var items = [];
+    try{ await walkDir(rec.handle, "", items, 0); }
+    catch(e){ return toast("That folder is no longer available"); }
+    return openItems(items, { dirRecord:{ handle:rec.handle, name:rec.name } });
+  }
+
+  if(rec.kind === "handle" && rec.handle){
+    if(await ensureRead(rec.handle)){
+      try{
+        var file = await rec.handle.getFile();
+        var text = await readText(file);
+        var f = { id:rec.id, name:file.name, dir:rec.dir||"", text:text, size:file.size,
+                  handle:rec.handle, source:"file", diskModified:file.lastModified || 0,
+                  dirty:false, scroll:rec.scroll || 0 };
+        var at = indexOfIdStrict(f.id);
+        if(at > -1){ state.files[at] = f; state.active = at; }
+        else { state.files.push(f); state.active = state.files.length - 1; }
+        paintFileList();
+        return render(true);
+      }catch(e){
+        toast("File moved or deleted, opening the saved copy");
+      }
+    }else{
+      toast("Permission declined, opening the saved copy");
+    }
+  }
+
+  if(rec.text){
+    var g = { id:rec.id, name:rec.name, dir:rec.dir||"", text:rec.text, size:rec.size,
+              handle:rec.handle || null, source: rec.kind === "text" ? "text" : "upload", scroll:rec.scroll || 0 };
+    var idx = indexOfIdStrict(g.id);
+    if(idx > -1){ state.files[idx] = g; state.active = idx; }
+    else { state.files.push(g); state.active = state.files.length - 1; }
+    paintFileList();
+    return render(true);
+  }
+
+  toast("Open that file again to view it, only its name was kept");
+}
+
+/* ================= file list ================= */
+
+function paintFileList(){
+  fileWrap.hidden = state.files.length < 1;
+  $("fileCount").textContent = state.files.length > 1 ? state.files.length : "";
+  $("closeAll").hidden = state.files.length < 2;
+  fileList.innerHTML = "";
+  state.files.forEach(function(f, i){
+    var row = document.createElement("div");
+    row.className = "file-row" + (i === state.active ? " active" : "");
+
+    var b = document.createElement("button");
+    b.className = "file";
+    b.setAttribute("aria-current", i === state.active ? "true" : "false");
+    b.title = (f.dir ? f.dir + "/" : "") + f.name;
+    b.appendChild(document.createTextNode(f.name));
+    if(f.dir){
+      var d = document.createElement("div");
+      d.className = "dir"; d.textContent = f.dir;
+      b.appendChild(d);
+    }
+    b.addEventListener("click", function(){
+      state.active = i;
+      render(false);
+      document.body.classList.remove("rail-open");
+    });
+
+    var x = document.createElement("button");
+    x.className = "file-x";
+    x.title = "Close " + f.name;
+    x.setAttribute("aria-label", "Close " + f.name);
+    x.textContent = "×";
+    x.addEventListener("click", function(e){
+      e.stopPropagation();
+      closeFile(i);
+    });
+
+    row.appendChild(b);
+    row.appendChild(x);
+    fileList.appendChild(row);
+  });
+}
+
+/* Closing only drops the document from this session.
+   It stays in Recent, so it can be reopened. */
+function closeFile(i){
+  if(i < 0 || i >= state.files.length) return;
+  var f = state.files[i];
+
+  if(f.dirty){
+    if(canWrite(f)){
+      saveFile();
+    }else if(!confirm("“" + f.name + "” has unsaved edits that can only be kept as a copy.\n\nClose it anyway?")){
+      return;
+    }
+  }
+
+  var name = f.name;
+  state.files.splice(i, 1);
+
+  if(!state.files.length){ return goHome("Closed " + name); }
+
+  if(state.active > i) state.active--;
+  else if(state.active === i) state.active = Math.min(i, state.files.length - 1);
+
+  paintFileList();
+  render(false);
+  toast("Closed " + name);
+}
+
+function closeAll(){
+  state.files = [];
+  goHome("Closed all files");
+}
+
+/* Back to the landing screen without touching the open files. */
+function goHome(msg){
+  var cur = state.files[state.active];
+  if(state.editing){
+    if(cur && cur.dirty && canWrite(cur)) saveFile();
+    state.editing = false;
+    Sync.clearAll();
+    Fmt.closeMenu();
+    document.body.classList.remove("editing", "show-preview");
+    editorPane.hidden = true;
+    $("paneTabs").hidden = true;
+    $("editBtn").classList.remove("on");
+    $("editBtn").title = "Edit this file";
+  }
+  setStatus("", "");
+  if(observer) observer.disconnect();
+  doc.hidden = true;
+  doc.innerHTML = "";
+  empty.hidden = false;
+  tocWrap.hidden = true;
+  toc.innerHTML = "";
+  state.active = -1;
+  $("div1").hidden = true;
+  $("closeBtn").hidden = true;
+  $("editBtn").hidden = true;
+  crumb.textContent = "";
+  meta.textContent = "";
+  document.title = BASE_TITLE;
+  paintFileList();
+  paintRecents();
+  document.body.classList.remove("rail-open");
+  window.scrollTo(0, 0);
+  if(msg) toast(msg);
+}
+
+function step(dir){
+  if(state.files.length < 2) return;
+  if(state.active < 0){ state.active = 0; return render(false); }
+  state.active = (state.active + dir + state.files.length) % state.files.length;
+  render(false);
+}
+
+/* ================= ui ================= */
+
+function toast(msg){
+  var t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove("show"); }, 2400);
+}
+
+$("openFiles").addEventListener("click", pickFiles);
+$("openFolder").addEventListener("click", pickFolder);
+$("dropzone").addEventListener("click", pickFiles);
+
+$("filePicker").addEventListener("change", function(e){
+  var items = Array.prototype.map.call(e.target.files, function(f){ return { file:f, dir:"" }; });
+  openItems(items);
+  e.target.value = "";
+});
+$("folderPicker").addEventListener("change", function(e){
+  var items = Array.prototype.map.call(e.target.files, function(f){
+    return { file:f, dir:(f.webkitRelativePath || "").split("/").slice(0,-1).join("/") };
+  });
+  openItems(items);
+  e.target.value = "";
+});
+
+$("urlBtn").addEventListener("click", function(){
+  var v = $("urlInput").value.trim();
+  if(v) loadURL(v);
+});
+$("urlInput").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){ var v = this.value.trim(); if(v) loadURL(v); }
+});
+
+$("clearRecents").addEventListener("click", function(){
+  Store.clear().then(function(){
+    $("resume").hidden = true;
+    paintRecents();
+    toast("History cleared");
+  }).catch(quiet);
+});
+
+$("printBtn").addEventListener("click", function(){ window.print(); });
+$("prevBtn").addEventListener("click", function(){ step(-1); });
+$("nextBtn").addEventListener("click", function(){ step(1); });
+$("menuBtn").addEventListener("click", function(){ document.body.classList.toggle("rail-open"); });
+$("railVeil").addEventListener("click", function(){ document.body.classList.remove("rail-open"); });
+$("homeBtn").addEventListener("click", function(){ goHome(); });
+$("closeBtn").addEventListener("click", function(){ closeFile(state.active); });
+$("closeAll").addEventListener("click", closeAll);
+
+var searchBox = $("search"), searchTimer;
+searchBox.addEventListener("input", function(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(function(){
+    state.query = searchBox.value;
+    if(state.active > -1) render(false);
+  }, 260);
+});
+
+$("paste").addEventListener("input", function(){
+  var text = this.value;
+  if(!text.trim()) return;
+  openText("Pasted markdown", text, "t:pasted");
+});
+
+/* drag and drop, folders included */
+var dragDepth = 0;
+window.addEventListener("dragenter", function(e){ e.preventDefault(); dragDepth++; document.body.classList.add("dragging"); });
+window.addEventListener("dragover", function(e){ e.preventDefault(); });
+window.addEventListener("dragleave", function(){ if(--dragDepth <= 0){ dragDepth = 0; document.body.classList.remove("dragging"); } });
+
+window.addEventListener("drop", async function(e){
+  e.preventDefault();
+  dragDepth = 0;
+  document.body.classList.remove("dragging");
+
+  var dt = e.dataTransfer, items = dt.items;
+
+  /* modern path keeps real handles so the drop lands in history */
+  if(items && items.length && items[0].getAsFileSystemHandle){
+    var handles = [];
+    for(var i=0;i<items.length;i++){
+      if(items[i].kind !== "file") continue;
+      try{ handles.push(await items[i].getAsFileSystemHandle()); }catch(err){}
+    }
+    var collected = [], dirRecord = null;
+    for(var j=0;j<handles.length;j++){
+      var h = handles[j];
+      if(!h) continue;
+      if(h.kind === "directory"){
+        dirRecord = { handle:h, name:h.name };
+        try{ await walkDir(h, "", collected, 0); }catch(err){}
+      }else{
+        try{ collected.push({ file: await h.getFile(), handle:h, dir:"" }); }catch(err){}
+      }
+    }
+    if(collected.length) return openItems(collected, dirRecord ? { dirRecord: dirRecord } : {});
+  }
+
+  /* older path, entries only */
+  if(items && items.length && items[0].webkitGetAsEntry){
+    var out = [], pending = 0, done = false;
+    function finish(){ if(done || pending) return; done = true; openItems(out); }
+    function walk(entry, path){
+      if(entry.isFile){
+        pending++;
+        entry.file(function(f){ out.push({ file:f, dir:path }); pending--; setTimeout(finish, 0); });
+      }else if(entry.isDirectory){
+        pending++;
+        entry.createReader().readEntries(function(entries){
+          entries.forEach(function(en){ walk(en, path ? path + "/" + entry.name : entry.name); });
+          pending--; setTimeout(finish, 0);
+        });
+      }
+    }
+    for(var k=0;k<items.length;k++){
+      var en = items[k].webkitGetAsEntry();
+      if(en) walk(en, "");
+    }
+    return setTimeout(finish, 60);
+  }
+
+  openItems(Array.prototype.map.call(dt.files, function(f){ return { file:f, dir:"" }; }));
+});
+
+/* keyboard */
+document.addEventListener("keydown", function(e){
+  var typing = /INPUT|TEXTAREA/.test(e.target.tagName);
+  var mod = e.ctrlKey || e.metaKey;
+
+  if(Fmt.shortcut(e)) return;
+  if(e.key === "Escape" && Fmt.closeMenu()) return;
+
+  if(mod && e.key.toLowerCase() === "s"){
+    e.preventDefault();
+    if(state.active > -1){
+      var f = state.files[state.active];
+      if(canWrite(f)){ f.dirty = true; saveFile(true); }
+      else saveCopy();
+    }
+    return;
+  }
+  if(mod && e.key.toLowerCase() === "e" && state.active > -1){
+    e.preventDefault();
+    if(state.editing) exitEdit(); else enterEdit();
+    return;
+  }
+  if(e.key === "Escape" && state.editing){ exitEdit(); return; }
+  if(e.key === "Escape" && !$("installHelp").hidden){ $("installHelp").hidden = true; return; }
+  if(e.key === "Escape" && document.body.classList.contains("rail-open")){
+    document.body.classList.remove("rail-open"); return;
+  }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o"){ e.preventDefault(); pickFiles(); return; }
+  if(typing){ if(e.key === "Escape") e.target.blur(); return; }
+  if(e.key === "/"){ e.preventDefault(); searchBox.focus(); }
+  else if(e.key === "["){ step(-1); }
+  else if(e.key === "]"){ step(1); }
+  else if(e.key === "Escape" && state.active > -1){ goHome(); }
+});
+
+/* progress and scroll memory */
+var scrollTimer;
+window.addEventListener("scroll", function(){
+  var h = document.documentElement.scrollHeight - window.innerHeight;
+  $("progress").style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(saveScroll, 500);
+}, { passive:true });
+window.addEventListener("beforeunload", saveScroll);
+
+/* ================= editing ================= */
+/* Files opened through the File System Access API carry a real handle, so
+   edits are written straight back to the file on disk. Everything else
+   (uploads, drops in older browsers, URLs, pasted text) can only be
+   exported as a copy, and says so. */
+
+var editor = $("editor"), editorPane = $("editorPane"), statusChip = $("status");
+var editTimer = null, saveTimer = null;
+var AUTOSAVE_MS = 900;
+
+function canWrite(f){ return !!(f && f.handle && f.handle.createWritable && !f.writeDenied); }
+
+function setStatus(kind, text){
+  statusChip.hidden = !text;
+  statusChip.className = "status" + (kind ? " " + kind : "");
+  statusChip.textContent = text || "";
+  statusChip.title = text || "";
+  statusChip.setAttribute("aria-label", text ? "Save state: " + text : "");
+}
+
+function refreshStatus(){
+  var f = state.files[state.active];
+  if(!f || !state.editing) return setStatus("", "");
+  if(f.dirty) return setStatus("dirty", canWrite(f) ? "Saving…" : "Unsaved");
+  if(canWrite(f)) return setStatus("saved", "Saved");
+  setStatus("readonly", "Copy only");
+}
+
+function enterEdit(){
+  var f = state.files[state.active];
+  if(!f) return;
+  state.editing = true;
+  document.body.classList.add("editing");
+  document.body.classList.remove("show-preview");
+  editorPane.hidden = false;
+  $("paneTabs").hidden = false;
+  doc.hidden = false;
+  $("editBtn").classList.add("on");
+  $("editBtn").title = "Done editing";
+  editor.value = f.text;
+  $("tabEdit").classList.add("on");
+  $("tabPreview").classList.remove("on");
+  refreshStatus();
+  Sync.reset();
+  if(!canWrite(f)){
+    toast(f.source === "url"
+      ? "Loaded from a link, so edits can only be saved as a copy"
+      : "This file was opened without write access, so edits save as a copy");
+  }
+  editor.focus();
+}
+
+function exitEdit(){
+  if(!state.editing) return;
+  var f = state.files[state.active];
+  state.editing = false;
+  document.body.classList.remove("editing", "show-preview");
+  editorPane.hidden = true;
+  $("paneTabs").hidden = true;
+  $("editBtn").classList.remove("on");
+  $("editBtn").title = "Edit this file";
+  setStatus("", "");
+  Sync.clearAll();
+  Fmt.closeMenu();
+  if(f && f.dirty && canWrite(f)) saveFile();
+  if(f) render(false);
+}
+
+/* Typing updates the preview quickly and schedules a save. */
+function onEdit(){
+  var f = state.files[state.active];
+  if(!f) return;
+  f.text = editor.value;
+  f.dirty = true;
+  refreshStatus();
+
+  clearTimeout(editTimer);
+  editTimer = setTimeout(function(){
+    if(state.files[state.active] !== f) return;
+    paintDoc(f.text);
+    Sync.afterRender();
+    var words = (f.text.trim().match(/\S+/g) || []).length;
+    meta.textContent = words.toLocaleString() + " words · " + Math.max(1, Math.round(words/225)) + " min";
+  }, 220);
+
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    if(canWrite(f)) saveFile();
+    else { remember(f); refreshStatus(); }
+  }, AUTOSAVE_MS);
+}
+
+async function ensureWrite(handle){
+  try{
+    var opts = { mode:"readwrite" };
+    if(await handle.queryPermission(opts) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  }catch(e){ return false; }
+}
+
+async function saveFile(announce){
+  var f = state.files[state.active];
+  if(!f || !f.dirty) return;
+  if(!canWrite(f)) return saveCopy();
+
+  if(!(await ensureWrite(f.handle))){
+    f.writeDenied = true;
+    toast("Permission declined, so this file can only be saved as a copy");
+    return refreshStatus();
+  }
+
+  /* Refuse to clobber a file that changed on disk since it was opened. */
+  try{
+    var current = await f.handle.getFile();
+    if(f.diskModified && current.lastModified > f.diskModified){
+      var onDisk = await readText(current);
+      if(onDisk !== f.text){
+        var keepMine = confirm(
+          f.name + " changed on disk since you opened it.\n\n" +
+          "OK overwrites the file with your version.\n" +
+          "Cancel keeps the version on disk and reloads it.");
+        if(!keepMine){
+          f.text = onDisk;
+          f.dirty = false;
+          f.diskModified = current.lastModified;
+          editor.value = onDisk;
+          onEdit.call(null);
+          f.dirty = false;
+          refreshStatus();
+          return toast("Reloaded the version from disk");
+        }
+      }
+    }
+  }catch(e){ /* file may have moved, the write below will report it */ }
+
+  try{
+    var w = await f.handle.createWritable();
+    await w.write(f.text);
+    await w.close();
+    var after = await f.handle.getFile();
+    f.diskModified = after.lastModified;
+    f.dirty = false;
+    refreshStatus();
+    remember(f);
+    if(announce) toast("Saved to " + f.name);
+  }catch(e){
+    f.dirty = true;
+    setStatus("dirty", "Not saved");
+    toast("Could not save. " + (e && e.message ? e.message : "The file may have moved."));
+  }
+}
+
+/* Fallback for anything without a writable handle. */
+async function saveCopy(){
+  var f = state.files[state.active];
+  if(!f) return;
+  var name = f.name.replace(MD_EXT, "") + ".md";
+
+  if(window.showSaveFilePicker){
+    try{
+      var handle = await window.showSaveFilePicker({
+        suggestedName: name,
+        types: [{ description:"Markdown", accept:{ "text/markdown":[".md"] } }]
+      });
+      var w = await handle.createWritable();
+      await w.write(f.text);
+      await w.close();
+      /* From here on this document is backed by a real file. */
+      f.handle = handle;
+      f.source = "file";
+      f.writeDenied = false;
+      f.name = handle.name;
+      var file = await handle.getFile();
+      f.diskModified = file.lastModified;
+      f.dirty = false;
+      crumb.textContent = f.name;
+      paintFileList();
+      refreshStatus();
+      remember(f);
+      return toast("Saved as " + f.name + ", further edits save automatically");
+    }catch(e){
+      if(e && e.name === "AbortError") return;
+    }
+  }
+
+  var blob = new Blob([f.text], { type:"text/markdown" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  f.dirty = false;
+  refreshStatus();
+  toast("Downloaded " + name);
+}
+
+editor.addEventListener("input", onEdit);
+
+/* ================= selection sync ================= */
+/* Selecting in one pane shows the same text selected in the other.
+   paintHTML() tags every preview block with the source range it came from.
+   Inside a block, rendered characters are aligned to source characters
+   greedily, which skips markup such as **, #, list markers and link URLs. */
+
+var Sync = (function(){
+  var mirror = $("editorMirror"), toggle = $("syncToggle");
+  var HAS_HL = !!(window.CSS && CSS.highlights && window.Highlight);
+  var cache = { gen:-1, map:{} };
+  var mirrorRange = null;    /* what the mirror is painting: { s, e, soft } */
+  var lastSel = null;        /* last editor selection we mirrored */
+  var litBlock = [];         /* preview elements of the block holding the caret */
+  var fallbackLit = [];      /* elements lit when the Highlight API is missing */
+  var queued = 0;
+
+  try{ if(localStorage.getItem("digitum-md-sync") === "off") toggle.checked = false; }catch(e){}
+
+  function on(){ return state.editing && toggle.checked && state.blocks.length > 0; }
+  function els(n){ return doc.querySelectorAll('[data-b="' + n + '"]'); }
+
+  /* rendered text of block n, its text nodes, and the char-to-source map */
+  function info(n){
+    if(cache.gen !== state.blockGen) cache = { gen:state.blockGen, map:{} };
+    if(cache.map[n]) return cache.map[n];
+    var b = state.blocks[n], list = els(n), nodes = [], text = "";
+    for(var i=0;i<list.length;i++){
+      var w = document.createTreeWalker(list[i], NodeFilter.SHOW_TEXT, {
+        acceptNode: function(t){
+          return t.parentElement.closest(".copy, .mermaid, svg, script, style")
+            ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      var t;
+      while((t = w.nextNode())){ nodes.push({ node:t, start:text.length }); text += t.nodeValue; }
+    }
+    var src = state.renderedText.slice(b.cs, b.e);
+    return (cache.map[n] = { nodes:nodes, text:text, map:align(text, src, b.cs), els:list });
+  }
+
+  function align(text, src, base){
+    var map = new Array(text.length), j = 0, WINDOW = 400;
+    for(var i=0;i<text.length;i++){
+      var c = text.charAt(i);
+      if(/\s/.test(c)){
+        if(j < src.length && /\s/.test(src.charAt(j))){ map[i] = base + j; j++; }
+        else map[i] = -1;
+        continue;
+      }
+      var lim = Math.min(src.length, j + WINDOW), found = -1;
+      for(var k=j;k<lim;k++){ if(src.charAt(k) === c){ found = k; break; } }
+      if(found > -1){ map[i] = base + found; j = found + 1; }
+      else map[i] = -1;
+    }
+    return map;
+  }
+
+  /* source offset -> rendered text index, for the start or end of a range */
+  function srcToStart(inf, pos){
+    for(var i=0;i<inf.map.length;i++){ if(inf.map[i] >= pos) return i; }
+    return null;
+  }
+  function srcToEnd(inf, pos){
+    for(var i=inf.map.length-1;i>=0;i--){ if(inf.map[i] > -1 && inf.map[i] < pos) return i + 1; }
+    return null;
+  }
+  /* rendered text index -> source offset */
+  function textToSrcStart(inf, idx, n){
+    for(var i=idx;i<inf.map.length;i++){ if(inf.map[i] > -1) return inf.map[i]; }
+    return trimmedEnd(n);
+  }
+  function textToSrcEnd(inf, idx, n){
+    for(var i=Math.min(idx, inf.map.length)-1;i>=0;i--){ if(inf.map[i] > -1) return inf.map[i] + 1; }
+    return state.blocks[n].cs;
+  }
+  function trimmedEnd(n){
+    var b = state.blocks[n], e = b.e;
+    while(e > b.s && /\s/.test(state.renderedText.charAt(e-1))) e--;
+    return e;
+  }
+
+  function textToPoint(inf, idx){
+    for(var i=inf.nodes.length-1;i>=0;i--){
+      var nd = inf.nodes[i];
+      if(nd.start <= idx) return { node:nd.node, offset:Math.min(idx - nd.start, nd.node.nodeValue.length) };
+    }
+    return null;
+  }
+  function pointToText(inf, node, offset){
+    if(node.nodeType === 3){
+      for(var i=0;i<inf.nodes.length;i++){ if(inf.nodes[i].node === node) return inf.nodes[i].start + offset; }
+    }
+    var r = document.createRange();
+    try{ r.setStart(node, offset); }catch(e){ return 0; }
+    for(var j=0;j<inf.nodes.length;j++){
+      try{ if(r.comparePoint(inf.nodes[j].node, 0) >= 0) return inf.nodes[j].start; }catch(e){}
+    }
+    return inf.text.length;
+  }
+
+  function blockOf(node){
+    var el = node && (node.nodeType === 1 ? node : node.parentElement);
+    var hit = el && el.closest ? el.closest("[data-b]") : null;
+    return hit && doc.contains(hit) ? +hit.getAttribute("data-b") : -1;
+  }
+  /* the block a selection boundary falls in, or the nearest one when it
+     sits in the gap between two blocks */
+  function pointBlock(node, offset, isEnd){
+    var n = blockOf(node);
+    if(n > -1 || node !== doc) return n;
+    var kids = doc.childNodes, i;
+    if(isEnd){
+      for(i=Math.min(offset, kids.length)-1;i>=0;i--){
+        if(kids[i].nodeType === 1 && kids[i].hasAttribute("data-b")) return +kids[i].getAttribute("data-b");
+      }
+      return 0;
+    }
+    for(i=offset;i<kids.length;i++){
+      if(kids[i].nodeType === 1 && kids[i].hasAttribute("data-b")) return +kids[i].getAttribute("data-b");
+    }
+    return state.blocks.length - 1;
+  }
+
+  function firstBlockFrom(pos){
+    for(var i=0;i<state.blocks.length;i++){ if(state.blocks[i].e > pos) return i; }
+    return state.blocks.length - 1;
+  }
+  function lastBlockBefore(pos){
+    for(var i=state.blocks.length-1;i>=0;i--){ if(state.blocks[i].s < pos) return i; }
+    return 0;
+  }
+
+  /* ---- painting in the preview ---- */
+
+  function clearPreview(){
+    if(HAS_HL) CSS.highlights.delete("md-sync");
+    fallbackLit.forEach(function(el){ el.classList.remove("sync-block"); });
+    fallbackLit = [];
+    markBlock(-1);
+  }
+  function markBlock(n){
+    litBlock.forEach(function(el){ el.classList.remove("sync-block"); });
+    litBlock = n > -1 ? Array.prototype.slice.call(els(n)) : [];
+    litBlock.forEach(function(el){ el.classList.add("sync-block"); });
+  }
+  function revealInPreview(rect){
+    if(!rect || (!rect.width && !rect.height)) return;
+    var box = doc.getBoundingClientRect();
+    if(!box.height) return;
+    if(rect.top < box.top + 30 || rect.bottom > box.bottom - 30){
+      doc.scrollTo({ top: doc.scrollTop + (rect.top - box.top) - box.height / 3, behavior:"smooth" });
+    }
+  }
+
+  /* ---- painting in the editor ---- */
+
+  function sizeMirror(){
+    mirror.style.width = editor.clientWidth + "px";
+    mirror.style.height = editor.clientHeight + "px";
+  }
+  function paintMirror(s, e, soft){
+    var t = editor.value;
+    mirrorRange = { s:s, e:e, soft:soft };
+    mirror.textContent = "";
+    mirror.appendChild(document.createTextNode(t.slice(0, s)));
+    var m = document.createElement("mark");
+    if(soft) m.className = "soft";
+    m.textContent = t.slice(s, e) || "​";
+    mirror.appendChild(m);
+    mirror.appendChild(document.createTextNode(t.slice(e) + "\n"));
+    sizeMirror();
+    mirror.scrollTop = editor.scrollTop;
+    return m;
+  }
+  function clearMirror(){
+    if(!mirrorRange) return;
+    mirror.textContent = "";
+    mirrorRange = null;
+  }
+  function revealInEditor(mark){
+    if(!mark || !editor.clientHeight) return;
+    var top = mark.offsetTop, h = editor.clientHeight;
+    if(top < editor.scrollTop + 20 || top + mark.offsetHeight > editor.scrollTop + h - 30){
+      editor.scrollTo({ top: Math.max(0, top - h / 3), behavior:"smooth" });
+    }
+  }
+
+  /* ---- editor -> preview ---- */
+
+  function fromEditor(force){
+    if(!on()){ clearPreview(); return; }
+    var s = editor.selectionStart, e = editor.selectionEnd;
+    if(!force && lastSel && lastSel.s === s && lastSel.e === e) return;
+    lastSel = { s:s, e:e };
+    clearMirror();   /* the editor has focus, so its own selection is showing */
+
+    if(s === e){
+      if(HAS_HL) CSS.highlights.delete("md-sync");
+      var n = firstBlockFrom(s);
+      markBlock(n);
+      if(litBlock[0]) revealInPreview(litBlock[0].getBoundingClientRect());
+      return;
+    }
+
+    markBlock(-1);
+    var a = firstBlockFrom(s), z = lastBlockBefore(e);
+    if(z < a) z = a;
+    var ia = info(a), iz = info(z);
+    var ta = srcToStart(ia, s), tz = srcToEnd(iz, e);
+    var start = ta !== null ? textToPoint(ia, ta) : null;
+    var end = tz !== null ? textToPoint(iz, tz) : null;
+    var range = document.createRange();
+    try{
+      if(start) range.setStart(start.node, start.offset);
+      else if(ia.els[0]) range.setStartBefore(ia.els[0]);
+      if(end) range.setEnd(end.node, end.offset);
+      else if(iz.els.length) range.setEndAfter(iz.els[iz.els.length - 1]);
+    }catch(err){ return; }
+
+    if(HAS_HL && !range.collapsed){
+      fallbackLit.forEach(function(el){ el.classList.remove("sync-block"); });
+      fallbackLit = [];
+      CSS.highlights.set("md-sync", new Highlight(range));
+    }else{
+      if(HAS_HL) CSS.highlights.delete("md-sync");
+      fallbackLit.forEach(function(el){ el.classList.remove("sync-block"); });
+      fallbackLit = [];
+      for(var k=a;k<=z;k++){
+        Array.prototype.forEach.call(els(k), function(el){ el.classList.add("sync-block"); fallbackLit.push(el); });
+      }
+    }
+    var rects = range.getClientRects();
+    revealInPreview(rects.length ? rects[0] : range.getBoundingClientRect());
+  }
+
+  /* ---- preview -> editor ---- */
+
+  function fromPreview(){
+    if(!on()) return;
+    var sel = window.getSelection();
+    if(!sel || !sel.rangeCount) return;
+    var r = sel.getRangeAt(0);
+    if(!doc.contains(r.commonAncestorContainer)) return;
+
+    if(HAS_HL) CSS.highlights.delete("md-sync");
+    markBlock(-1);
+    var a = pointBlock(r.startContainer, r.startOffset, false);
+    var z = r.collapsed ? a : pointBlock(r.endContainer, r.endOffset, true);
+    if(a < 0 || z < 0) return;
+    var ia = info(a), iz = info(z);
+    var s = textToSrcStart(ia, pointToText(ia, r.startContainer, r.startOffset), a);
+    var len = editor.value.length;
+
+    if(r.collapsed){
+      /* a click: put the caret there and tint the block's source */
+      s = Math.min(s, len);
+      setEditorRange(s, s);
+      var b = state.blocks[a];
+      revealInEditor(paintMirror(Math.min(b.s, len), Math.min(trimmedEnd(a), len), true));
+      return;
+    }
+
+    var e = textToSrcEnd(iz, pointToText(iz, r.endContainer, r.endOffset), z);
+    if(e <= s){ s = state.blocks[a].s; e = trimmedEnd(z); }
+    s = Math.min(s, len); e = Math.min(e, len);
+    setEditorRange(s, e);
+    revealInEditor(paintMirror(s, e, false));
+  }
+
+  function setEditorRange(s, e){
+    lastSel = { s:s, e:e };
+    try{ editor.setSelectionRange(s, e); }catch(err){}
+  }
+
+  function schedule(which){
+    if(queued) cancelAnimationFrame(queued);
+    queued = requestAnimationFrame(function(){
+      queued = 0;
+      if(which === "editor") fromEditor(false); else fromPreview();
+    });
+  }
+
+  document.addEventListener("selectionchange", function(){
+    if(!state.editing) return;
+    schedule(document.activeElement === editor ? "editor" : "preview");
+  });
+  /* Firefox reports textarea selection on the element, not the document */
+  ["select","keyup","mouseup"].forEach(function(t){
+    editor.addEventListener(t, function(){ if(state.editing) schedule("editor"); });
+  });
+  editor.addEventListener("focus", function(){ clearMirror(); });
+  editor.addEventListener("scroll", function(){ mirror.scrollTop = editor.scrollTop; }, { passive:true });
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){
+      sizeMirror();
+      if(mirrorRange) paintMirror(mirrorRange.s, mirrorRange.e, mirrorRange.soft);
+    }).observe(editor);
+  }
+
+  toggle.addEventListener("change", function(){
+    try{ localStorage.setItem("digitum-md-sync", toggle.checked ? "on" : "off"); }catch(e){}
+    if(toggle.checked){ lastSel = null; fromEditor(true); }
+    else { clearPreview(); clearMirror(); }
+  });
+
+  /* Ticking a checklist box in the preview ticks it in the source too. */
+  doc.addEventListener("change", function(e){
+    var box = e.target;
+    if(!state.editing || !box.matches || !box.matches("li > input[type=checkbox]")) return;
+    if(editor.value !== state.renderedText) return;
+    var n = blockOf(box);
+    if(n < 0) return;
+    var boxes = [];
+    Array.prototype.forEach.call(els(n), function(el){
+      boxes = boxes.concat(Array.prototype.slice.call(el.querySelectorAll("li > input[type=checkbox]")));
+    });
+    var k = boxes.indexOf(box), b = state.blocks[n];
+    var rx = /^[ \t>]*(?:[-*+]|\d+[.)])[ \t]+\[([ xX])\]/gm, seg = state.renderedText.slice(b.s, b.e), m, i = 0;
+    while((m = rx.exec(seg))){
+      if(i++ === k){
+        var at = b.s + m.index + m[0].length - 2;
+        var keepS = editor.selectionStart, keepE = editor.selectionEnd;
+        Fmt.replace(at, at + 1, box.checked ? "x" : " ", keepS, keepE);
+        return;
+      }
+    }
+  });
+
+  return {
+    /* new document or entering edit mode */
+    reset: function(){
+      lastSel = null;
+      clearPreview();
+      clearMirror();
+      sizeMirror();
+    },
+    clearAll: function(){ lastSel = null; clearPreview(); clearMirror(); },
+    /* the preview was rebuilt while typing */
+    afterRender: function(){
+      lastSel = null;
+      if(document.activeElement === editor) fromEditor(true);
+      else if(mirrorRange) paintMirror(mirrorRange.s, mirrorRange.e, mirrorRange.soft);
+    },
+    /* a pane became visible again on a narrow screen */
+    refresh: function(){
+      sizeMirror();
+      if(mirrorRange) revealInEditor(paintMirror(mirrorRange.s, mirrorRange.e, mirrorRange.soft));
+      else if(on()){ lastSel = null; fromEditor(true); }
+    },
+    previewHasSelection: function(){
+      var sel = window.getSelection();
+      return !!(toggle.checked && sel && sel.rangeCount && !sel.isCollapsed && doc.contains(sel.getRangeAt(0).commonAncestorContainer));
+    }
+  };
+})();
+
+/* ================= formatting ================= */
+/* Every change goes through execCommand("insertText") when the browser
+   supports it, so Ctrl Z undoes formatting like any other typing. */
+
+var Fmt = (function(){
+  var LIST_RX = /^(\s*)(?:[-*+][ \t]+\[[ xX]\][ \t]+|[-*+][ \t]+|\d+[.)][ \t]+)/;
+  var menu = $("headingMenu"), headingBtn = $("headingBtn");
+
+  function cur(){ return { s:editor.selectionStart, e:editor.selectionEnd, v:editor.value }; }
+
+  function replace(s, e, text, selS, selE){
+    var before = editor.value;
+    editor.focus({ preventScroll:true });
+    editor.setSelectionRange(s, e);
+    var ok = false;
+    try{ ok = document.execCommand("insertText", false, text); }catch(err){}
+    var expect = before.slice(0, s) + text + before.slice(e);
+    if(!ok || editor.value !== expect){
+      editor.value = expect;
+      onEdit();
+    }
+    editor.setSelectionRange(selS, selE);
+  }
+
+  /* line range covering the selection; a selection ending right after a
+     newline does not pull in the following line */
+  function lineSpan(v, s, e){
+    var a = v.lastIndexOf("\n", s - 1) + 1;
+    var end = (e > s && v.charAt(e - 1) === "\n") ? e - 1 : e;
+    var z = v.indexOf("\n", end);
+    if(z < 0) z = v.length;
+    return { a:a, z:z };
+  }
+
+  function mapLines(fn){
+    var c = cur(), sp = lineSpan(c.v, c.s, c.e);
+    var old = c.v.slice(sp.a, sp.z), lines = old.split("\n");
+    var out = fn(lines).join("\n");
+    if(out === old){ editor.focus(); return; }
+    if(lines.length === 1 && c.s === c.e){
+      /* keep the caret on the same character, measured from the line end */
+      var np = Math.max(sp.a, sp.a + out.length - (sp.z - c.s));
+      replace(sp.a, sp.z, out, np, np);
+    }else{
+      replace(sp.a, sp.z, out, sp.a, sp.a + out.length);
+    }
+  }
+
+  function headingLevelAt(){
+    var c = cur(), sp = lineSpan(c.v, c.s, c.s);
+    var m = c.v.slice(sp.a, sp.z).match(/^ {0,3}(#{1,6})(\s|$)/);
+    return m ? m[1].length : 0;
+  }
+
+  function heading(level){
+    var now = headingLevelAt();
+    var target = (level > 0 && level === now) ? 0 : level;   /* same level again toggles it off */
+    mapLines(function(lines){
+      return lines.map(function(l){
+        if(!l.trim() && lines.length > 1) return l;
+        var body = l.replace(/^ {0,3}#{1,6}(?:[ \t]+|$)/, "");
+        return target ? new Array(target + 1).join("#") + " " + body : body;
+      });
+    });
+  }
+
+  function list(kind){
+    var test = kind === "ul" ? /^\s*[-*+][ \t]+(?!\[[ xX]\])/
+             : kind === "ol" ? /^\s*\d+[.)][ \t]+/
+             : /^\s*[-*+][ \t]+\[[ xX]\][ \t]+/;
+    mapLines(function(lines){
+      var filled = lines.filter(function(l){ return l.trim(); });
+      var all = filled.length > 0 && filled.every(function(l){ return test.test(l); });
+      var n = 0;
+      return lines.map(function(l){
+        if(!l.trim() && lines.length > 1) return l;
+        var m = l.match(LIST_RX), indent = m ? m[1] : l.match(/^\s*/)[0];
+        var body = m ? l.slice(m[0].length) : l.slice(indent.length);
+        body = body.replace(/^>\s?/, "");
+        if(all) return indent + body;
+        n++;
+        return indent + (kind === "ul" ? "- " : kind === "ol" ? n + ". " : "- [ ] ") + body;
+      });
+    });
+  }
+
+  function quote(){
+    mapLines(function(lines){
+      var filled = lines.filter(function(l){ return l.trim(); });
+      var all = filled.length > 0 && filled.every(function(l){ return /^\s*>/.test(l); });
+      return lines.map(function(l){
+        if(all) return l.replace(/^(\s*)>[ \t]?/, "$1");
+        return l.trim() || lines.length === 1 ? "> " + l : ">";
+      });
+    });
+  }
+
+  function starRun(v, at, dir){
+    var n = 0;
+    while(v.charAt(at + (dir < 0 ? -1 - n : n)) === "*") n++;
+    return n;
+  }
+
+  /* toggles an inline mark such as ** or ~~ around the selection */
+  function wrap(mark, placeholder){
+    var c = cur(), v = c.v, s = c.s, e = c.e, ml = mark.length;
+    while(s < e && /\s/.test(v.charAt(s))) s++;
+    while(e > s && /\s/.test(v.charAt(e - 1))) e--;
+    var inner = v.slice(s, e);
+
+    if(inner.indexOf("\n") > -1){
+      /* across lines: mark each line's text, after any list or heading prefix */
+      var out = inner.split("\n").map(function(l){
+        var m = l.match(/^(\s*(?:#{1,6}\s+|>\s*|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+[.)]\s+)*)(.*?)(\s*)$/);
+        return m && m[2] ? m[1] + mark + m[2] + mark + m[3] : l;
+      }).join("\n");
+      return replace(s, e, out, s, s + out.length);
+    }
+
+    var outside;
+    if(mark.charAt(0) === "*"){
+      var b = starRun(v, s, -1), a = starRun(v, e, 1);
+      outside = ml === 2 ? (b >= 2 && a >= 2 && b !== 1) : (b % 2 === 1 && a % 2 === 1);
+    }else{
+      outside = v.slice(s - ml, s) === mark && v.slice(e, e + ml) === mark;
+    }
+    if(outside && s - ml >= 0){
+      return replace(s - ml, e + ml, inner, s - ml, e - ml);
+    }
+    if(inner.length >= ml * 2 && inner.slice(0, ml) === mark && inner.slice(-ml) === mark){
+      var un = inner.slice(ml, inner.length - ml);
+      return replace(s, e, un, s, s + un.length);
+    }
+    if(s === e){
+      return replace(s, s, mark + placeholder + mark, s + ml, s + ml + placeholder.length);
+    }
+    replace(s, e, mark + inner + mark, s + ml, e + ml);
+  }
+
+  function link(isImage){
+    var c = cur(), t = c.v.slice(c.s, c.e), pre = isImage ? "![" : "[";
+    var label = isImage ? "alt text" : "link text";
+    if(/^(https?:\/\/|www\.)\S+$/i.test(t.trim())){
+      var out = pre + label + "](" + t.trim() + ")";
+      return replace(c.s, c.e, out, c.s + pre.length, c.s + pre.length + label.length);
+    }
+    var text = t || label, url = "https://";
+    var out2 = pre + text + "](" + url + ")";
+    var us = c.s + pre.length + text.length + 2;
+    if(!t) return replace(c.s, c.e, out2, c.s + pre.length, c.s + pre.length + text.length);
+    replace(c.s, c.e, out2, us, us + url.length);
+  }
+
+  /* puts a block on its own lines with a blank line on each side */
+  function insertBlock(text, selFrom, selTo){
+    var c = cur(), v = c.v, sp = lineSpan(v, c.s, c.e);
+    var line = v.slice(sp.a, sp.z), at, end, pre = "", post = "";
+    if(c.s === c.e && !line.trim()){
+      at = sp.a; end = sp.z;
+      if(at > 0 && v.charAt(at - 2) !== "\n" && at - 2 >= 0) pre = "\n";
+    }else{
+      at = end = sp.z;
+      pre = at > 0 ? "\n\n" : "";
+    }
+    if(end < v.length && !(v.charAt(end + 1) === "\n" || end + 1 >= v.length)) post = "\n";
+    var out = pre + text + post, base = at + pre.length;
+    replace(at, end, out, base + selFrom, base + selTo);
+  }
+
+  function codeBlock(){
+    var c = cur();
+    if(c.s !== c.e){
+      var sp = lineSpan(c.v, c.s, c.e), body = c.v.slice(sp.a, sp.z);
+      var fenced = /^```[^\n]*\n[\s\S]*\n```$/.test(body);
+      if(fenced){
+        var inner = body.replace(/^```[^\n]*\n/, "").replace(/\n```$/, "");
+        return replace(sp.a, sp.z, inner, sp.a, sp.a + inner.length);
+      }
+      var out = "```\n" + body + "\n```";
+      return replace(sp.a, sp.z, out, sp.a + 4, sp.a + 4 + body.length);
+    }
+    insertBlock("```\n\n```", 4, 4);
+  }
+
+  function indent(out){
+    var c = cur(), v = c.v, sp = lineSpan(v, c.s, c.e);
+    var lines = v.slice(sp.a, sp.z).split("\n"), first = 0, total = 0;
+    var res = lines.map(function(l, i){
+      if(out){
+        var cut = l.match(/^( {1,2}|\t)/);
+        var d = cut ? cut[0].length : 0;
+        if(i === 0) first = -d;
+        total -= d;
+        return l.slice(d);
+      }
+      if(i === 0) first = 2;
+      total += 2;
+      return "  " + l;
+    }).join("\n");
+    if(c.s === c.e){
+      var np = Math.max(sp.a, c.s + first);
+      return replace(sp.a, sp.z, res, np, np);
+    }
+    replace(sp.a, sp.z, res, Math.max(sp.a, c.s + first), Math.max(sp.a, c.e + total));
+  }
+
+  /* Enter inside a list starts the next item; Enter on an empty item ends the list */
+  function continueList(){
+    var c = cur(), v = c.v;
+    if(c.s !== c.e) return false;
+    var a = v.lastIndexOf("\n", c.s - 1) + 1, line = v.slice(a, c.s);
+    var m = line.match(/^(\s*)(?:([-*+])[ \t]+(\[[ xX]\][ \t]+)?|(\d+)([.)])[ \t]+|(>)[ \t]?)/);
+    if(!m) return false;
+    var rest = v.slice(c.s, v.indexOf("\n", c.s) < 0 ? v.length : v.indexOf("\n", c.s));
+    if(line.length === m[0].length && !rest.trim()){
+      replace(a, c.s, "", a, a);   /* empty item: drop the marker */
+      return true;
+    }
+    var next = m[1] + (m[2] ? m[2] + " " + (m[3] ? "[ ] " : "")
+                     : m[4] ? (parseInt(m[4], 10) + 1) + m[5] + " "
+                     : "> ");
+    replace(c.s, c.e, "\n" + next, c.s + 1 + next.length, c.s + 1 + next.length);
+    return true;
+  }
+
+  function openMenu(){
+    var r = headingBtn.getBoundingClientRect(), lvl = headingLevelAt();
+    Array.prototype.forEach.call(menu.querySelectorAll("button"), function(b){
+      b.classList.toggle("cur", +b.dataset.level === lvl);
+    });
+    menu.hidden = false;
+    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + "px";
+    menu.style.top = (r.bottom + 4) + "px";
+    headingBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeMenu(){
+    if(menu.hidden) return false;
+    menu.hidden = true;
+    headingBtn.setAttribute("aria-expanded", "false");
+    return true;
+  }
+
+  function run(cmd){
+    if(!state.editing || state.active < 0) return;
+    if(cmd === "headingMenu"){ if(!closeMenu()) openMenu(); return; }
+    closeMenu();
+    switch(cmd){
+      case "undo": case "redo":
+        editor.focus();
+        try{ document.execCommand(cmd); }catch(e){}
+        return;
+      case "h1": case "h2": case "h3": case "h4": case "h5": case "h6":
+        return heading(+cmd.charAt(1));
+      case "p": return heading(0);
+      case "bold": return wrap("**", "bold text");
+      case "italic": return wrap("*", "italic text");
+      case "strike": return wrap("~~", "struck text");
+      case "code": return wrap("`", "code");
+      case "link": return link(false);
+      case "image": return link(true);
+      case "ul": case "ol": case "task": return list(cmd);
+      case "quote": return quote();
+      case "codeblock": return codeBlock();
+      case "table": return insertBlock("| Column | Column |\n| --- | --- |\n| Cell | Cell |", 2, 8);
+      case "hr": return insertBlock("---", 3, 3);
+    }
+  }
+
+  /* Formatting shortcuts work in the editor, and on text selected in the
+     preview (that selection is already mirrored into the editor). */
+  function shortcut(e){
+    if(!state.editing) return false;
+    if(document.activeElement !== editor && !Sync.previewHasSelection()) return false;
+    var mod = e.ctrlKey || e.metaKey;
+    if(!mod) return false;
+    var k = e.key.toLowerCase(), code = e.code || "", cmd = null;
+    if(e.altKey && !e.shiftKey && /^Digit[0-6]$/.test(code) &&
+       !(e.getModifierState && e.getModifierState("AltGraph"))){
+      cmd = code === "Digit0" ? "p" : "h" + code.charAt(5);
+    }else if(!e.altKey && !e.shiftKey){
+      if(k === "b") cmd = "bold";
+      else if(k === "i") cmd = "italic";
+      else if(k === "k") cmd = "link";
+    }else if(!e.altKey && e.shiftKey){
+      if(code === "KeyX") cmd = "strike";
+      else if(code === "KeyE") cmd = "code";
+      else if(code === "Digit7") cmd = "ol";
+      else if(code === "Digit8") cmd = "ul";
+      else if(code === "Digit9") cmd = "task";
+      else if(code === "Period") cmd = "quote";
+    }
+    if(!cmd) return false;
+    e.preventDefault();
+    run(cmd);
+    return true;
+  }
+
+  var bar = $("mdToolbar");
+  /* keep the current selection, in either pane, when a button is pressed */
+  bar.addEventListener("mousedown", function(e){ if(e.target.closest(".tb")) e.preventDefault(); });
+  menu.addEventListener("mousedown", function(e){ e.preventDefault(); });
+  bar.addEventListener("click", function(e){
+    var b = e.target.closest(".tb");
+    if(b) run(b.dataset.cmd);
+  });
+  menu.addEventListener("click", function(e){
+    var b = e.target.closest("button[data-level]");
+    if(!b) return;
+    closeMenu();
+    heading(+b.dataset.level);
+  });
+  document.addEventListener("mousedown", function(e){
+    if(!menu.hidden && !menu.contains(e.target) && !headingBtn.contains(e.target)) closeMenu();
+  });
+  window.addEventListener("resize", closeMenu);
+
+  editor.addEventListener("keydown", function(e){
+    if(e.isComposing) return;
+    if(e.key === "Tab" && !e.ctrlKey && !e.metaKey && !e.altKey){
+      e.preventDefault();
+      var c = cur(), sp = lineSpan(c.v, c.s, c.e);
+      var multi = c.v.slice(sp.a, sp.z).indexOf("\n") > -1;
+      var inList = LIST_RX.test(c.v.slice(sp.a, sp.z));
+      if(e.shiftKey || multi || inList) indent(e.shiftKey);
+      else replace(c.s, c.e, "  ", c.s + 2, c.s + 2);
+      return;
+    }
+    if(e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey){
+      if(continueList()) e.preventDefault();
+    }
+  });
+
+  return { run:run, shortcut:shortcut, replace:replace, closeMenu:closeMenu };
+})();
+
+$("editBtn").addEventListener("click", function(){
+  if(state.editing) exitEdit(); else enterEdit();
+});
+$("saveCopyBtn").addEventListener("click", saveCopy);
+$("tabEdit").addEventListener("click", function(){
+  document.body.classList.remove("show-preview");
+  this.classList.add("on"); $("tabPreview").classList.remove("on");
+  Sync.refresh();
+});
+$("tabPreview").addEventListener("click", function(){
+  document.body.classList.add("show-preview");
+  this.classList.add("on"); $("tabEdit").classList.remove("on");
+  Fmt.closeMenu();
+  Sync.refresh();
+});
+
+/* ================= theme ================= */
+
+function isDark(){
+  var t = document.documentElement.getAttribute("data-theme");
+  if(t) return t === "dark";
+  return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+}
+function paintThemeColor(){
+  if(!document.documentElement.getAttribute("data-theme")) return;
+  var c = isDark() ? "#272320" : "#EFEAE1";
+  Array.prototype.forEach.call(document.querySelectorAll('meta[name="theme-color"]'), function(m){ m.setAttribute("content", c); });
+}
+$("themeBtn").addEventListener("click", function(){
+  var next = isDark() ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try{ localStorage.setItem("digitum-md-theme", next); }catch(e){}
+  paintThemeColor();
+  if(state.active > -1 && doc.querySelector(".mermaid")){
+    /* diagrams are drawn for one theme, so draw them again */
+    if(state.editing){ paintDoc(state.files[state.active].text); Sync.afterRender(); }
+    else render(false);
+  }
+});
+paintThemeColor();
+
+/* Never lose work on an accidental tab close. */
+window.addEventListener("beforeunload", function(e){
+  var f = state.files[state.active];
+  if(state.editing && f && f.dirty){
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+/* ================= install as an app ================= */
+
+var UA = navigator.userAgent;
+var IS_IOS = /iPad|iPhone|iPod/.test(UA) ||
+             (/Macintosh/.test(UA) && navigator.maxTouchPoints > 0);
+var IS_CHROMIUM = /Chrome|Chromium|CriOS|Edg|EdgiOS|OPR/.test(UA);
+var IS_FIREFOX = /Firefox|FxiOS/.test(UA);
+var IS_MAC_SAFARI = /Macintosh/.test(UA) && /Safari/.test(UA) &&
+                    !IS_CHROMIUM && !IS_FIREFOX && navigator.maxTouchPoints === 0;
+var INSTALLED = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+                navigator.standalone === true;
+
+var installBtn = $("installBtn"), installLabel = $("installLabel"), installHelp = $("installHelp"),
+    installCta = $("installCta"), installCtaBtn = $("installCtaBtn");
+var deferredInstall = null;
+
+function showInstall(label, title, sub){
+  installLabel.textContent = label;
+  installBtn.hidden = false;
+  installCtaBtn.textContent = label;
+  $("installCtaTitle").textContent = title;
+  $("installCtaSub").textContent = sub;
+  installCta.hidden = false;
+}
+
+function hideInstall(){
+  installBtn.hidden = true;
+  installCta.hidden = true;
+}
+
+/* Chromium hands us a real prompt, but only once its own engagement
+   heuristics are satisfied, so the button is shown either way and falls
+   back to the browser menu route below. */
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredInstall = e;
+  showInstall("Install app", "Install this viewer",
+    "Runs in its own window, and .md files can open here straight from your file manager.");
+});
+
+if(!INSTALLED){
+  if(IS_IOS){
+    showInstall("Add to Home Screen", "Use it like an app",
+      "Add it to your Home Screen for an icon and a full screen window.");
+  }else if(IS_MAC_SAFARI){
+    showInstall("Add to Dock", "Use it like an app",
+      "Safari can keep this in your Dock as its own window.");
+  }else if(IS_CHROMIUM){
+    showInstall("Install app", "Install this viewer",
+      "Runs in its own window, and .md files can open here straight from your file manager.");
+  }
+  /* Firefox has no install support at all, so nothing is offered there. */
+}
+
+function sheet(title, sub, steps, fine, checks){
+  $("installHelpTitle").textContent = title;
+  $("installHelpSub").textContent = sub;
+  var ol = $("installHelpSteps");
+  ol.innerHTML = "";
+  steps.forEach(function(s){
+    var li = document.createElement("li");
+    li.innerHTML = s;
+    ol.appendChild(li);
+  });
+  $("installHelpFine").innerHTML = fine;
+  $("installChecks").hidden = !checks;
+  installHelp.hidden = false;
+}
+
+/* Tells the user exactly which installability requirement is missing,
+   which is nearly always a file that didn't make it into the deploy. */
+async function runChecks(){
+  var box = $("installChecks");
+  box.innerHTML = "<div class='row'><span class='mark'>·</span><span class='txt'>Checking…</span></div>";
+
+  var results = [];
+  var secure = location.protocol === "https:" || location.hostname === "localhost";
+  results.push({ ok:secure, label:"Served over HTTPS", hint:"Install only works on https." });
+
+  try{
+    var mr = await fetch("manifest.json", { cache:"no-store" });
+    var mj = mr.ok ? await mr.json() : null;
+    results.push({
+      ok: !!(mj && mj.name && mj.icons && mj.icons.length),
+      label:"manifest.json reachable",
+      hint:"Upload manifest.json next to index.html."
+    });
+  }catch(e){
+    results.push({ ok:false, label:"manifest.json reachable", hint:"Upload manifest.json next to index.html." });
+  }
+
+  try{
+    var ir = await fetch("icons/icon-512.png", { cache:"no-store" });
+    results.push({ ok:ir.ok, label:"App icons reachable", hint:"Upload the icons folder." });
+  }catch(e){
+    results.push({ ok:false, label:"App icons reachable", hint:"Upload the icons folder." });
+  }
+
+  var swOk = false;
+  try{
+    if("serviceWorker" in navigator){
+      var regs = await navigator.serviceWorker.getRegistrations();
+      swOk = regs.length > 0;
+    }
+  }catch(e){}
+  results.push({ ok:swOk, label:"Service worker registered", hint:"Upload sw.js, then reload once." });
+
+  box.innerHTML = "";
+  results.forEach(function(r){
+    var row = document.createElement("div");
+    row.className = "row " + (r.ok ? "ok" : "bad");
+    var mark = document.createElement("span");
+    mark.className = "mark";
+    mark.textContent = r.ok ? "✓" : "✕";
+    var txt = document.createElement("span");
+    txt.className = "txt";
+    txt.textContent = r.label;
+    if(!r.ok){
+      var hint = document.createElement("span");
+      hint.className = "hint";
+      hint.textContent = r.hint;
+      txt.appendChild(hint);
+    }
+    row.appendChild(mark); row.appendChild(txt);
+    box.appendChild(row);
+  });
+}
+
+async function runInstall(){
+  if(deferredInstall){
+    hideInstall();
+    deferredInstall.prompt();
+    var choice = await deferredInstall.userChoice;
+    deferredInstall = null;
+    if(choice.outcome !== "accepted"){
+      showInstall("Install app", "Install this viewer",
+        "Runs in its own window, and .md files can open here straight from your file manager.");
+    }
+    return;
+  }
+
+  if(IS_IOS){
+    return sheet("Add to Home Screen",
+      "Gives the viewer its own icon and a full screen window, no browser bars.",
+      ["Tap the <strong>Share</strong> button in the toolbar",
+       "Scroll down and choose <strong>Add to Home Screen</strong>",
+       "Tap <strong>Add</strong>"],
+      "On iPhone and iPad, tapping a .md file in the Files app still won't open it here. Apple's browser engine doesn't support file associations, so use <strong>Open files</strong> inside the app instead.",
+      false);
+  }
+
+  if(IS_MAC_SAFARI){
+    return sheet("Add to Dock",
+      "Safari keeps this in your Dock as its own window.",
+      ["Open the <strong>File</strong> menu",
+       "Choose <strong>Add to Dock</strong>",
+       "Confirm the name and click <strong>Add</strong>"],
+      "Safari can't associate .md files with a web app. For double click to open files here, use Chrome or Edge.",
+      false);
+  }
+
+  sheet("Install this viewer",
+    "The browser hasn't offered its own install button yet, so use the menu instead. Both routes install the same app.",
+    ["Open the browser menu, the <strong>⋮</strong> icon on the right of the toolbar",
+     "Choose <strong>Cast, save and share</strong>, then <strong>Install page as app</strong>",
+     "Confirm with <strong>Install</strong>"],
+    "Chrome only shows its own install icon in the address bar once it considers the site installable and you have interacted with it. The checks above show whether anything is actually missing from the deploy.",
+    true);
+  runChecks();
+}
+
+installBtn.addEventListener("click", runInstall);
+installCtaBtn.addEventListener("click", runInstall);
+
+$("installHelpClose").addEventListener("click", function(){ installHelp.hidden = true; });
+installHelp.addEventListener("click", function(e){
+  if(e.target === installHelp) installHelp.hidden = true;
+});
+
+window.addEventListener("appinstalled", function(){
+  hideInstall();
+  toast("Installed. You can now open .md files straight from your computer.");
+});
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("/sw.js").catch(function(){});
+  });
+}
+
+/* files opened from the OS (double-click, "Open with") land here once installed */
+if(window.launchQueue && window.launchQueue.setConsumer){
+  window.launchQueue.setConsumer(async function(launchParams){
+    if(!launchParams.files || !launchParams.files.length) return;
+    var items = [];
+    for(var i=0;i<launchParams.files.length;i++){
+      try{
+        var handle = launchParams.files[i];
+        items.push({ file: await handle.getFile(), handle: handle, dir:"" });
+      }catch(e){}
+    }
+    if(items.length) openItems(items);
+  });
+}
+
+/* boot */
+paintRecents();
+
+var src = new URLSearchParams(window.location.search).get("src");
+if(src) loadURL(src);
+})();
+</script>
+</body>
+</html>
